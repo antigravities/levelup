@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <!-- Shamelessly stolen from Bootstrap's album template -->
+
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+
+        <title>
+            /r/Steam Sale Recommendations
+        </title>
+
+        <style>
+            .display-none {
+                display: none;
+            }
+
+            .twitter-typeahead {
+                width: 100%;
+            }
+
+            .g-recaptcha {
+                display: inline-block;
+            }
+        </style>
+
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css" integrity="sha384-9aIt2nRpC12Uk9gS9baDl411NQApFmC26EwAOH8WgZl5MYYxFfc+NcPb1dKGj7Sk" crossorigin="anonymous">
+        <script src="https://code.jquery.com/jquery-3.5.1.min.js" crossorigin="anonymous"></script>
+        <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js" integrity="sha384-OgVRvuATP1z7JjHLkuOU7Xw704+h835Lr+6QL9UvYjZE3Ipu6Tp75j7Bh/kR0JKI" crossorigin="anonymous"></script>
+        <script src="https://twitter.github.io/typeahead.js/releases/latest/typeahead.bundle.js"></script>
+        <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/2.0.11/purify.min.js"></script>
+
+        <script>
+            const platDecode = { "W": "Win", "M": "Mac", "L": "Linux" }
+            let suggestions;
+            let tags = [];
+            const currentCountry = "us";
+
+            function refresh(items){
+                $(".minitrailer").off("mouseover");
+                $(".minitrailer").off("mouseout");
+
+                let html = "";
+
+                if( items.length == 0 ){
+                    document.querySelector("#recs").innerHTML = "No items found.";
+                    return;
+                }
+
+                for( let suggestion of items ){
+                    let appid = suggestion.appid;
+
+                    html += `
+                    <div class="col-md-4">
+                        <div class="card mb-4 shadow-sm ${suggestion.genres.indexOf("Early Access") > -1 ? "early-access": ""}">
+                            <img class="ea-ribbon" src="https://s3.cutie.cafe/recommendations/early_access.png" style="top: 0; left: 0; position: absolute; width: 40%; display: ${suggestion.genres.indexOf("Early Access") > -1 ? "block" : "none"}">
+                            <div class="card-img-top minitrailer" data-video="${suggestion.video}" data-capsule="https://steamcdn-a.akamaihd.net/steam/apps/${suggestion.appid}/header.jpg" width="100%">
+                                <img data-appid="${appid}" width="100%" src="https://steamcdn-a.akamaihd.net/steam/apps/${suggestion.appid}/header.jpg?t=${Date.now()}"></img>
+                            </div>
+                            <div class="card-body">
+                                <h5 class="card-title">
+                                    ${DOMPurify.sanitize(suggestion.name)} (${suggestion.release_year})<br>
+                                    <small class="text-muted">${DOMPurify.sanitize(suggestion.developers[0] == suggestion.publishers[0] ? suggestion.developers[0] : suggestion.developers[0] + "; " + suggestion.publishers[0])}</small>
+                                </h5>
+                                <p class="card-text">
+                                    ${suggestion.genres.filter(i => i != "Early Access").map(i => "<a class='badge badge-info' class='tag' href='#tag=" + DOMPurify.sanitize(i) + "'>" + DOMPurify.sanitize(i) + "</a>").join(" ")}<br>
+
+                                    ${DOMPurify.sanitize(suggestion.description)}
+                                </p>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div class="btn-group">
+                                        ${priceTag(suggestion)}
+                                    </div>
+                                    <small class="text-muted" style="text-align: right;"><a href="https://store.steampowered.com/app/${suggestion.appid}" target="_blank">View on Steam</a><br>${/* suggestion.platforms.split("").map(i => platDecode[i]).join(" ") */ ""}</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    `;
+                }
+
+                document.querySelector("#recs").innerHTML = html;
+
+                let mtIsShowing = false;
+
+                $(".minitrailer").hover(
+                    e => {
+                        if( mtIsShowing || e.currentTarget.getAttribute("data-video") == "" ) return;
+                        mtIsShowing = true;
+                        e.currentTarget.innerHTML = "<video autoplay loop muted style='width: 100%'><source src='" + e.currentTarget.getAttribute("data-video").replace("http", "https") + "'></video>";
+                        $(e.currentTarget.parentElement).find(".ea-ribbon").css("display", "none");
+                    },
+                    e => {
+                        if( ! mtIsShowing ) return;
+                        mtIsShowing = false;
+                        e.currentTarget.innerHTML = "<img src='" + e.currentTarget.getAttribute("data-capsule") + "' width='100%'>";
+                        console.log(e.currentTarget.parentElement.getAttribute("class").indexOf("early-access"));
+                        $(e.currentTarget.parentElement).find(".ea-ribbon").css("display", e.currentTarget.parentElement.getAttribute("class").indexOf("early-access") > -1 ? "block": "none");
+                    }
+                );
+            }
+
+            function parseHash(){
+                let filtered = suggestions;
+                
+                let modifiedTags = false;
+                let modifiedCost = false;
+
+                for( i of window.location.hash.substring(1).split(";") ){
+                    if( i.startsWith("tag=") ){
+                        let tn = i.replace("tag=", "").replace("%20", " ");
+
+                        document.querySelector("#tags-select").value = tn;
+                        filtered = filtered.filter(i => i.genres.indexOf(tn) > -1);
+                        modifiedTags = true;
+                    } else if( i.startsWith("under=") ){
+                        let under = parseFloat(i.replace("under=", ""));
+                        filtered = filtered.filter(i => getLowestPrice(i) < under);
+                        modifiedCost = true;
+                    }
+                }
+
+                if( ! modifiedTags ) document.querySelector("#tags-select").value = "";
+                if( ! modifiedCost ) document.querySelector("#max-cost").value = "";
+
+                refresh(filtered);
+            }
+
+            function priceTag(app){
+                if( ! app.prices ) return "(no price)"
+                else if( app.prices.Humble && app.prices.Humble[currentCountry].price < app.prices.Steam[currentCountry].price ) return "<a class='btn btn-sm btn-outline-primary' href='" + app.prices.Humble[currentCountry].url + "'>Buy on Humble Bundle ($" + (app.prices.Humble[currentCountry].price/100) + ")</a>";
+                else return "<a class='btn btn-sm btn-outline-primary' href='" + app.prices.Steam[currentCountry].url + "'>Buy on Steam ($" + (app.prices.Steam[currentCountry].price/100) + ")</a>";
+            }
+
+            function getLowestPrice(app){
+                if( ! app.prices ) return 99999999;
+                if( app.prices.Humble && app.prices.Humble[currentCountry].price < app.prices.Steam[currentCountry].price ) return app.prices.Humble[currentCountry].price/100;
+                else return app.prices.Steam[currentCountry].price/100;
+            }
+
+            window.addEventListener("load", async () => {
+                $("#show-submit-modal").on("click", () => $("#submit-modal").modal('show'));
+
+                $("#appsearch").typeahead({
+                    classNames: {
+                        input: "form-control",
+                        menu: "dropdown-menu",
+                        suggestion: "dropdown-item",
+                        hint: "display-none"
+                    }
+                }, {
+                    name: "apps",
+                    display: (v) => v.name + " (" + v.appid + ")",
+                    source: new Bloodhound({
+                        datumTokenizer: Bloodhound.tokenizers.whitespace,
+                        queryTokenizer: Bloodhound.tokenizers.whitespace,
+                        remote: {
+                            url: '/api/search?q=%QUERY',
+                            wildcard: '%QUERY'
+                        }
+                    }),
+                    //limit: 10
+                });
+   
+                $("#submit").on("click", () => {
+                    if( $("#appsearch").val() == "" || ( isNaN(parseInt($("#appsearch").val())) && /\((\d*)\)$/.exec($("#appsearch").val()) == null ) ) return $("#error").text("Please enter an app to suggest.");
+                    if( grecaptcha.getResponse() == "" ) return $("#error").text("Are you a robot?");
+
+                    $("#error").text("");
+                    $("#submit").addClass("disabled");
+                    $("#submit").text("Please wait...");
+
+                    fetch("/api/submit", {
+                        method: "POST",
+                        body: JSON.stringify({
+                            appid: isNaN(parseInt($("#appsearch").val())) ? /\((\d*)\)$/.exec($("#appsearch").val())[1] : ("" + parseInt($("#appsearch").val())),
+                            recaptcha: grecaptcha.getResponse()
+                        }),
+                        headers: {
+                            "Content-Type": "application/json"
+                        }
+                    }).then(() => {
+                        $(".modal-body").html("Thanks for your submission! <a href='/?#submit' onclick='window.location.reload()'>Click here to submit another title.</a>")
+                        $("#submit").attr("style", "display: none;");
+                    });
+                });
+
+                if( window.location.hash == "#submit" ) $("#submit-modal").modal("show");
+
+                suggestions = (await (await fetch("/api/suggestions")).json());
+                suggestions = Object.keys(suggestions).map(i => suggestions[i]);
+
+                for( let suggestion of suggestions ){
+                    for( let tag of suggestion.genres ){
+                        if( tags.indexOf(tag) < 0 ) tags.push(tag);
+                    }
+                }
+
+                tags.sort();
+
+                let tagHTML = "";
+
+                for( let tag of tags ){
+                    tagHTML += "<option value='" + DOMPurify.sanitize(tag) + "'>" + DOMPurify.sanitize(tag) + "</option>";
+                }
+
+                document.querySelector("#tags-select").innerHTML += tagHTML;
+
+                parseHash();
+
+                document.querySelector("#tags-select").addEventListener("change", e => {
+                    let fHash = "#tag=" + e.target.value;
+                    if( document.querySelector("#max-cost").value != "" ) fHash += ";under=" + document.querySelector("#max-cost").value;
+
+                    window.location.hash = fHash;
+                });
+
+                document.querySelector("#max-cost").addEventListener("change", e => {
+                    let fHash = "#";
+                    if( document.querySelector("#tags-select").value != "" ) fHash += "tag=" + document.querySelector("#tags-select").value + ";";
+                    
+                    if( e.target.value != "" ) fHash += "under=" + e.target.value;
+
+                    window.location.hash = fHash;
+                });
+
+
+            });
+
+            window.addEventListener("hashchange", parseHash);
+        </script>
+    </head>
+    <body>
+        <header>
+            <div class="navbar navbar-dark bg-dark shadow-sm">
+                <div class="container d-flex justify-content-between">
+                    <a href="#" class="navbar-brand d-flex align-items-center">
+                        <strong>/r/Steam Sale Recommendations</strong>
+                    </a>
+                    <span>
+                        <a class="btn btn-sm btn-primary" href="https://www.reddit.com/r/Steam" target="_blank">Visit us on reddit</a>
+                        <a class="btn btn-sm btn-primary" href="https://discord.gg/Steam" target="_blank">Join us on Discord</a>
+                    </span>
+                </div>
+            </div>
+        </header>
+
+        <main role="main">
+            <section class="jumbotron text-center">
+                <div class="container">
+                    <h1>Not sure what to buy this sale?</h1>
+
+                    <p class="lead text-muted">
+                        Get recommendations from people just like you - or recommend a title yourself.
+                    </p>
+
+                    <p>
+                        <a id="show-submit-modal" href="#" class="btn btn-primary">Recommend a title</a>
+                    </p>
+                </div>
+            </section>
+
+            <div class="album" id="recommendations">
+                <div class="container">
+                    <div class="form-group">
+                        <div class="row">
+                            <div class="col">
+                                <select class="form-control" id="tags-select">
+                                    <option value="" disabled selected>Select a tag...</option>
+                                </select>
+                            </div>
+                            <div class="col input-group">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text">Under $</span>
+                                </div>
+                                <input type="number" id="max-cost" class="form-control">
+
+                                <a class="btn btn-primary" href="#" style="margin-left: 1rem;">Reset</a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row" id="recs">
+
+                    </div>
+                </div>
+            </div>
+
+            <div id="submit-modal" class="modal fade" tabindex="-1" role="dialog">
+                <div class="modal-dialog" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                        <h5 class="modal-title">Submit a recommendation</h5>
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        <div class="modal-body">
+                            <div style="color: red; font-weight: bold;" id="error"></div>
+
+                            Submissions are manually reviewed. Titles that are not available in most countries or are not discounted may not be approved.<br><br>
+                            <input class="input" id="appsearch" class="form-control" placeholder="Start typing a name or enter an AppID..." style="width: 100%;"><br>
+                            <hr>
+                            <div style="text-align: center;">
+                                <div class="g-recaptcha" data-sitekey="6LckE6cZAAAAAHKS9GVwqwMgC-ojZHxfuDl-v9vK"></div>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-primary" id="submit">Submit</button>
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <hr />
+            
+            <p style="text-align: center;">
+                Hosted and run by <a href="https://cutie.cafe" target="_blank">Cutie Caf&eacute;</a> for the /r/Steam community &middot; <a href="https://privacy.cutie.cafe/" target="_blank">Privacy</a><br>
+                Powered by <a href="https://store.steampowered.com/" target="_blank">Steam</a> &middot; All capsules, descriptions, etc. are for illustrative purposes only and &copy; their respective owners.
+            </p>
+
+        </main>
+    </body>
+</html>
