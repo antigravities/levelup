@@ -2,16 +2,18 @@ package types
 
 // App represents a Steam app
 type App struct {
-	AppID         int        `json:"appid"`
-	Name          string     `json:"name"`
-	Prices        *AppPrices `json:"prices"`
-	RecommendedBy []string   `json:"recommendedBy"`
-	Developers    []string   `json:"developers"`
-	Publishers    []string   `json:"publishers"`
-	LastUpdate    int64      `json:"lastUpdate"`
-	Description   string     `json:"description"`
-	Genres        []string   `json:"genres"`
-	ReleaseYear   int        `json:"release_year"`
+	AppID         int
+	Name          string
+	Prices        *AppPrices
+	RecommendedAt int64
+	Developers    []string
+	Publishers    []string
+	LastUpdate    int64
+	Description   string
+	Genres        []string
+	ReleaseYear   int
+	Screenshot    string
+	IsPending     bool
 }
 
 // AppPrices represents the prices of an app
@@ -30,5 +32,5 @@ type AppPrice struct {
 
 var (
 	// Regions is a list of regions supported by Level Up
-	Regions []string = []string{"us", "fr"}
+	Regions []string = []string{"us", "fr", "uk"}
 )

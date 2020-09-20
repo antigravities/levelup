@@ -82,3 +82,9 @@ func Query(qs string) ([]types.SteamGame, error) {
 
 	return res, nil
 }
+
+// IsApp checks if an AppID is in the index.
+func IsApp(appid int) bool {
+	_, ok := apps[strconv.Itoa(appid)]
+	return ok
+}

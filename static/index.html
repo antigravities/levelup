@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <html>
     <head>
         <title>
@@ -6,117 +7,348 @@
 
         <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z" crossorigin="anonymous">
 
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+
         <script src="https://code.jquery.com/jquery-3.5.1.min.js" crossorigin="anonymous"></script>
         <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js" integrity="sha384-9/reFTGAW83EW2RDu2S0VKaIzap3H66lZH81PoYlFhbGU+6BZp6G7niu735Sk7lN" crossorigin="anonymous"></script>
         <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js" integrity="sha384-B4gt1jrGC7Jh4AgTPSdUtOBvfO8shuf57BaghqFfPlYxofvL8/KUEfYiJOMMV+rV" crossorigin="anonymous"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/2.0.11/purify.min.js"></script>
+        <script src="https://twitter.github.io/typeahead.js/releases/latest/typeahead.bundle.js"></script>
+        <script src="https://www.google.com/recaptcha/api.js" async defer></script>
 
         <style type="text/css">
-          @media only screen and (min-width: 1560px) {
-            #selectors {
-              position: fixed;
-              left: 1em;
-              top: calc(56px + 0.5em);
-              width: calc(25% - 1em);
+          #apps {
+            width: calc(100% - 2rem);
 
-              height: calc(100vh - 56px - 1em);
-            }
-
-            #apps {
-              position: absolute;
-              right: 1em;
-              top: calc(56px + 0.5em);
-              width: calc(75% - 1em);
-
-              height: 100%;
-            }
+            margin-right: 1rem;
+            margin-left: 1rem;
           }
 
-          @media only screen and (max-width: 1560px) {
-            #selectors {
-              margin-top: calc(56px + 0.5em);
-              margin-bottom: 0.5em;
-            }
+          .app-picture {
+            height: calc(calc(.25rem * 2) + 1.25rem + 1rem)
+          }
 
-            #apps {
-              margin: 0 auto;
-            }
+          #app-carousel {
+            margin-top: calc(56px);
+            margin-bottom: .5em;
+          }
+
+          .carousel-item > img {
+            max-height: 40vh;
+            width: 100%; height: 100%;
+            object-fit: cover;
+          }
+
+          .carousel-item > .carousel-caption {
+            background: rgba(0, 0, 0, 0.5);
+            padding: 1em;
+            border-radius: 1em;
+          }
+
+          .twitter-typeahead {
+            width: 100%;
+          }
+
+          .g-recaptcha {
+            display: inline-block;
           }
         </style>
 
         <script>
           let apps;
-          const country = "fr";
-          const currency = "EUR";
+          let currency = "$";
+          let country = "us";
 
-          function refreshApps(apps){
-            let html = "";
+          let args = {};
 
-            for( app in apps ){
-              app = apps[app];
+          let selectedGenre = "";
+          let underPrice = -1;
+          let sortType = "name";
 
-              console.log(app);
-              
-              let appPrice;
-              if( app.price != null ) appPrice = `<a class="btn btn-sm btn-outline-primary" href="${app.price.url}">${app.price.provider} (${app.price.discount > 0 ? "-" + app.price.discount + "% " : ""}${currency}${app.price.price/100})</a>`;
-              else appPrice = "(unavailable)";
+          let genres = [];
 
-              html += `
-              <div class="col-sm-12 col-md-6 col-lg-3">
-                <div class="card mb-4 shadow-sm ${app.genres.indexOf("Early Access") > -1 ? "early-access": ""}">
-                  <img class="ea-ribbon" src="https://s3.cutie.cafe/recommendations/early_access.png" style="top: 0; left: 0; position: absolute; width: 40%; display: ${app.genres.indexOf("Early Access") > -1 ? "block" : "none"}">
-                  <div class="card-img-top minitrailer" data-video="${app.video}" data-capsule="https://steamcdn-a.akamaihd.net/steam/apps/${app.appid}/header.jpg" width="100%">
-                    <img data-appid="${app.appid}" width="100%" src="https://steamcdn-a.akamaihd.net/steam/apps/${app.appid}/header.jpg?t=${Date.now()}"></img>
-                  </div>
-                  <div class="card-body">
-                    <h5 class="card-title">
-                      ${DOMPurify.sanitize(app.name)} (${app.release_year})<br>
-                      <small class="text-muted">${DOMPurify.sanitize(app.developers[0] == app.publishers[0] ? app.developers[0] : app.developers[0] + "; " + app.publishers[0])}</small>
-                    </h5>
-                    <p class="card-text">
-                      ${app.genres.filter(i => i != "Early Access").map(i => "<a class='badge badge-info' class='tag' href='#tag=" + DOMPurify.sanitize(i) + "'>" + DOMPurify.sanitize(i) + "</a>").join(" ")}<br>
+          function formatPrice(price, forceUS){
+            if( country == "fr" && ! forceUS ) price = price.toString().replace(".", ",") + "&euro;"
+            else if( country == "uk" && ! forceUS ) price = "&pound;" + price.toString();
+            else price = "$" + price.toString() + " USD";
 
-                      ${DOMPurify.sanitize(app.description)}
-                    </p>
-                    <div class="d-flex justify-content-between align-items-center">
-                      <div class="btn-group">
-                        ${appPrice}
-                      </div>
-                      <small class="text-muted" style="text-align: right;"><a href="https://store.steampowered.com/app/${app.appid}" target="_blank">View on Steam</a><br>${/* app.platforms.split("").map(i => platDecode[i]).join(" ") */ ""}</small>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              `;
-            }
-
-            document.querySelector("#apps").innerHTML = html;
+            return price;
           }
 
-          window.addEventListener("load", async () => {
-            apps = await (await fetch("/api/suggestions")).json();
-
+          function scanPrices(){
             for( app in apps ){
               app = apps[app];
 
-              app.price = app.prices[Object.keys(app.prices).sort((j, k) => {
-                if( app.prices[j] && app.prices[j][country] ) app.prices[j][country].provider = j;
-                if( app.prices[k] && app.prices[k][country] ) app.prices[k][country].provider = k;
+              app.price = app.Prices[Object.keys(app.Prices).sort((j, k) => {
+                if( app.Prices[j] && app.Prices[j][country] ) app.Prices[j][country].provider = j;
+                if( app.Prices[k] && app.Prices[k][country] ) app.Prices[k][country].provider = k;
 
-                if( ! app.prices[j] || ! app.prices[j][country] ) return 1;
-                if( ! app.prices[k] || ! app.prices[k][country] ) return -1;
+                if( ! app.Prices[j] || ! app.Prices[j][country] ) return 1;
+                if( ! app.Prices[k] || ! app.Prices[k][country] ) return -1;
 
-                if( app.prices[j][country].price < app.prices[k][country].price ) return -1;
-                else if( app.prices[j][country].price > app.prices[k][country].price ) return 1;
+                if( app.Prices[j][country].price < app.Prices[k][country].price ) return -1;
+                else if( app.Prices[j][country].price > app.Prices[k][country].price ) return 1;
                 else return 0;
               })[0]];
 
               if( app.price != null ) app.price = app.price[country];
+            }
+          }
 
-              console.log(app.price);
+          function buyAppButton(app){
+            return `${app.price == null ? `unavailable` : `<a class="btn btn-sm btn-primary" href="${app.price.url}">${app.price.provider} (${app.price.discount > 0 ? "-" + app.price.discount + "% " : ""}${formatPrice(app.price.price/100, app.price.provider == "Humble")})</a>`}`
+          }
+
+          function initSearch(){
+
+            $("#appsearch").typeahead({
+              classNames: {
+                input: "form-control",
+                menu: "dropdown-menu",
+                suggestion: "dropdown-item",
+                hint: "display-none"
+              }
+            }, {
+              name: "apps",
+              display: (v) => v.name + " (" + v.appid + ")",
+              source: new Bloodhound({
+                datumTokenizer: Bloodhound.tokenizers.whitespace,
+                queryTokenizer: Bloodhound.tokenizers.whitespace,
+                remote: {
+                  url: '/api/search?q=%QUERY',
+                  wildcard: '%QUERY'
+                }
+              }),
+              //limit: 10
+            });
+
+            $("#submit").on("click", () => {
+              if( $("#appsearch").val() == "" || ( isNaN(parseInt($("#appsearch").val())) && /\((\d*)\)$/.exec($("#appsearch").val()) == null ) ) return $("#error").text("Please enter an app to suggest.");
+              if( grecaptcha.getResponse() == "" ) return $("#error").text("Are you a robot?");
+
+              $("#error").text("");
+              $("#submit").addClass("disabled");
+              $("#submit").text("Please wait...");
+
+              fetch("/api/suggestions", {
+                method: "POST",
+                body: JSON.stringify({
+                    AppID: isNaN(parseInt($("#appsearch").val())) ? parseInt(/\((\d*)\)$/.exec($("#appsearch").val())[1]) : (parseInt($("#appsearch").val())),
+                    Recaptcha: grecaptcha.getResponse()
+                }),
+                headers: {
+                    "Content-Type": "application/json"
+                }
+              }).then((resp) => {
+                if( resp.status != 200 ){
+                  resp.text().then((x) => {
+                    $("#error").text(x);
+                    $("#submit").removeClass("disabled");
+                    $("#submit").text("Submit");
+                  })
+                  return;
+                }
+
+                $(".modal-body").text("Thanks for your submission!")
+                $("#submit").attr("style", "display: none;");
+              }).catch(() => {
+                $("#error").text("Could not submit. Try again later.");
+                $("#submit").removeClass("disabled");
+                $("#submit").text("Submit");
+              });
+            });
+
+            $("#show-submit-modal").on("click", e => {
+              e.preventDefault();
+              $("#submit-modal").modal('show')
+            })
+          }
+
+          function refreshApps(apps){
+            Array.from(document.querySelectorAll(".currency")).forEach(i => i.innerHTML = currency);
+
+            if( sortType != "added_asc" || selectedGenre != "" || underPrice != -1 ){
+              document.querySelector("#app-carousel").setAttribute("style", "display: none");
+              document.querySelector("#apps").setAttribute("style", "margin-top: calc(56px + .5em);")
+            } else {
+              document.querySelector("#app-carousel").setAttribute("style", "display: block");
+              document.querySelector("#apps").setAttribute("style", "");
+
+              let chosen = [];
+
+              Array.from(document.querySelectorAll("[data-lu-slide]")).forEach(i => {
+                let choice = -1;
+
+                while( chosen.indexOf(choice) > -1 || choice == -1 ) {
+                  choice = Object.keys(apps)[Math.floor(Math.random()*Object.keys(apps).length)];
+                  if( Object.keys(apps).length < 5 ) break;
+                }
+
+                let app = apps[choice];
+                i.querySelector("img").setAttribute("src", app.Screenshot);
+                i.querySelector("h5").innerText = app.Name;
+                i.querySelector("p").innerHTML = DOMPurify.sanitize(app.Description) + "<br><br>" + buyAppButton(app);
+
+                chosen.push(choice);
+              });
             }
 
-            refreshApps(apps);
+            let html = "";
+
+            if( apps.length < 1 ){
+              html = "<h1>Oops!</h1>Your search didn't turn up anything. Broaden your search terms to find something you'll love.";  
+            }
+
+            for( app in apps ){
+              app = apps[app];
+              
+              let appPrice;
+              if( app.price != null ) appPrice = ``;
+              else appPrice = "(unavailable)";
+
+              html += `
+                <div class="list-group-item flex-cloumn align-items-start">
+                  <div class="d-flex w-100">
+                    <img class="app-picture" data-appid="${app.AppID}" src="https://cdn.cloudflare.steamstatic.com/steam/apps/${app.AppID}/capsule_184x69.jpg">
+                    <div class="ml-1 flex-fill">
+                      <h5 class="mb-1 mt-0">${DOMPurify.sanitize(app.Name)}</h5>
+                      <h6 class="mb-1 text-muted">${DOMPurify.sanitize(app.Developers[0].trim() == app.Publishers[0].trim() ? app.Developers[0] : app.Developers[0] + "; " + app.Publishers[0])}</h6>
+                    </div>
+
+                    <div class="mb-1">
+                      ${buyAppButton(app)}
+                    </div>
+                  </div>
+
+                  <p class="mb-0">
+                    ${app.Genres.filter(i => i != "Early Access").map(i => "<a href='#' class='badge badge-info tag replace' data-arg='genre' data-replace='" + DOMPurify.sanitize(i) + "'>" + DOMPurify.sanitize(i) + "</a>").join(" ")}
+                  </p>
+
+                  <p class="mb-0">
+                    ${DOMPurify.sanitize(app.Description)}
+                  </p>
+                </div>
+              `;
+            }
+
+            document.querySelector("#apps").innerHTML = html;
+
+            document.querySelectorAll(".replace").forEach(i => {
+              i = clone(i);
+
+              i.addEventListener("click", e => {
+                e.preventDefault();
+                replaceHashParam(i.getAttribute("data-arg"), i.getAttribute("data-replace"));
+              });
+            });
+
+            document.querySelectorAll(".fprice").forEach(i => {
+              i.innerHTML = formatPrice(i.getAttribute("data-price"));
+            });
+          }
+
+          function parseHash(){
+            let params = {};
+
+            window.location.hash.substring(1).replace(/\%20/g, " ").split(";").forEach(i => {
+              params[i.split("=")[0]] = i.split("=")[1];
+            });
+
+            args = params;
+
+            selectedGenre = params.genre || "";
+
+            sortType = params.sort || "added_asc";
+
+            country = params.cc || "us";
+            if( country == "fr" ) currency = "&euro";
+            else if( country == "uk" ) currency = "&pound;";
+            else currency = "$";
+
+            underPrice = ! isNaN(parseFloat(params.under)) ? parseFloat(params.under) : -1;
+
+            let apply = Object.keys(apps).filter(i => {
+              if( selectedGenre != "" ){
+                console.log(apps[i].Genres.map(i => i.toLowerCase()));
+                if( apps[i].Genres.map(i => i.toLowerCase()).indexOf(selectedGenre.toLowerCase()) < 0 ) return false;
+              }
+
+              if( underPrice > 0 ){
+                if( (apps[i].price.price/100) > underPrice ) return false;
+              }
+
+              return true;
+            }).map(i => apps[i]);
+
+            switch(sortType){
+              case "old":
+                break;
+              case "new":
+                apply = apply.reverse();
+                break;
+              case "price_asc":
+                apply = apply.sort((a, b) => {
+                  if( a.price.price < b.price.price ) return -1;
+                  else if( b.price.price < a.price.price ) return 1;
+                  else return 0;
+                });
+                break;
+              case "price_desc":
+                apply = apply.sort((a, b) => {
+                  if( a.price.price > b.price.price ) return -1;
+                  else if( b.price.price < a.price.price ) return 1;
+                  else return 0;
+                });
+                break;
+              case "name":
+              default:
+                apply = apply.sort((a, b) => {
+                  if( a.Name < b.Name ) return -1;
+                  else if( b.Name > a.Name ) return 1;
+                  else return 0;
+                });
+                break;
+            }
+
+            scanPrices();
+
+            refreshApps(apply);
+          }
+
+          function replaceHashParam(param, wth){
+            args[param] = wth;
+            window.location.hash = Object.keys(args).filter(i => i.length > 0).map(i => i + "=" + args[i]).join(";");
+          }
+
+          function clone(elem){
+            let nelem = elem.cloneNode(true);
+            elem.parentNode.replaceChild(nelem, elem);
+            return nelem;
+          }
+
+          window.addEventListener("hashchange", parseHash);
+
+          window.addEventListener("load", async () => {
+            apps = await (await fetch("/api/suggestions")).json();
+
+            for(app of Object.keys(apps)){
+              apps[app].Genres.forEach(i => {
+                if( genres.indexOf(i) < 0 ){
+                  genres.push(i);
+                }
+              });
+            }
+
+            let genresHtml = "";
+            for( i of genres ){
+              genresHtml += `
+                <a class="dropdown-item replace" href="#" data-arg="genre" data-replace="${i}">${i}</a>
+              `;
+            }
+            document.querySelector("#genre-dropdown-options").innerHTML = genresHtml;
+
+            parseHash();
+            initSearch();
           });
         </script>
       </head>
@@ -129,22 +361,42 @@
           
             <div class="collapse navbar-collapse" id="navbar">
               <ul class="navbar-nav mr-auto">
-                <li class="nav-item active">
-                  <a class="nav-link" href="#">Home</a>
-                </li>
-                <li class="nav-item">
-                  <a class="nav-link" href="#">Link</a>
-                </li>
-                <li class="nav-item">
-                  <a class="nav-link disabled" href="#" tabindex="-1" aria-disabled="true">Disabled</a>
+                <li class="nav-item dropdown">
+                  <a class="nav-link dropdown-toggle" href="#" id="genre-dropdown" data-toggle="dropdown">Filter by genre</a>
+                  <div class="dropdown-menu" id="genre-dropdown-options">
+                  </div>
                 </li>
                 <li class="nav-item dropdown">
-                  <a class="nav-link dropdown-toggle" href="#" id="dropdown05" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Dropdown</a>
-                  <div class="dropdown-menu" aria-labelledby="dropdown05">
-                    <a class="dropdown-item" href="#">Action</a>
-                    <a class="dropdown-item" href="#">Another action</a>
-                    <a class="dropdown-item" href="#">Something else here</a>
+                  <a class="nav-link dropdown-toggle" href="#" id="price-dropdown" data-toggle="dropdown">Filter by price</a>
+                  <div class="dropdown-menu" id="price-dropdown-options">
+                    <a href="#" class="dropdown-item replace" data-arg="under" data-replace="0.01">Free</a>
+                    <a href="#" class="dropdown-item replace" data-arg="under" data-replace="1">Under <span class="fprice" data-price="1">$1</span></a>
+                    <a href="#" class="dropdown-item replace" data-arg="under" data-replace="5">Under <span class="fprice" data-price="5">$5</span></a>
+                    <a href="#" class="dropdown-item replace" data-arg="under" data-replace="10">Under <span class="fprice" data-price="10">$10</span></a>
+                    <a href="#" class="dropdown-item replace" data-arg="under" data-replace="15">Under <span class="fprice" data-price="15">$15</span></a>
+                    <a href="#" class="dropdown-item replace" data-arg="under" data-replace="20">Under <span class="fprice" data-price="20">$20</span></a>
                   </div>
+                </li>
+                <li class="nav-item dropdown">
+                  <a class="nav-link dropdown-toggle" href="#" id="currency-dropdown" data-toggle="dropdown">Currency</a>
+                  <div class="dropdown-menu" id="currency-dropdown-options">
+                    <a href="#" class="dropdown-item replace" data-arg="cc" data-replace="us">$ (US Dollars)</a>
+                    <a href="#" class="dropdown-item replace" data-arg="cc" data-replace="fr">&euro; (Euro)</a>
+                    <a href="#" class="dropdown-item replace" data-arg="cc" data-replace="uk">&pound; (UK)</a>
+                  </div>
+                </li>
+                <li class="nav-item dropdown">
+                  <a class="nav-link dropdown-toggle" href="#" id="currency-dropdown" data-toggle="dropdown">Sort by</a>
+                  <div class="dropdown-menu" id="currency-dropdown-options">
+                    <a href="#" class="dropdown-item replace" data-arg="sort" data-replace="price_asc">Price (Low to High)</a>
+                    <a href="#" class="dropdown-item replace" data-arg="sort" data-replace="price_desc">Price (High to Low)</a>
+                    <a href="#" class="dropdown-item replace" data-arg="sort" data-replace="name">Name</a>
+                    <a href="#" class="dropdown-item replace" data-arg="sort" data-replace="new">AppID (Newest)</a>
+                    <a href="#" class="dropdown-item replace" data-arg="sort" data-replace="old">AppID (Oldest)</a>
+                  </div>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="#" id="show-submit-modal">Submit a recommendation</a>
                 </li>
               </ul>
               <div class="my-2 my-md-0">
@@ -153,25 +405,82 @@
             </div>
           </nav>
 
-          <div id="selectors">
-            <h3>Filters</h3>
-
-            <select id="select_tag" class="form-control">
-              <option value="" disabled selected>Select a genre...</option>
-            </select>
-
-            <hr>
-
-            <div class="col input-group">
-                <div class="input-group-prepend">
-                    <span class="input-group-text">Under <span class="currency"></span></span>
+          <div id="app-carousel" class="carousel slide" data-ride="carousel">
+            <ol class="carousel-indicators">
+              <li data-target="#app-carousel" data-slide-to="0" class="active"></li>
+              <li data-target="#app-carousel" data-slide-to="1"></li>
+              <li data-target="#app-carousel" data-slide-to="2"></li>
+              <li data-target="#app-carousel" data-slide-to="3"></li>
+              <li data-target="#app-carousel" data-slide-to="4"></li>
+            </ol>
+            <div class="carousel-inner">
+              <div class="carousel-item active" data-lu-slide="0">
+                <img class="d-block" src="" alt="">
+                <div class="carousel-caption d-none d-md-block">
+                  <h5></h5>
+                  <p></p>
                 </div>
-                <input type="number" id="max-cost" class="form-control">
+              </div>
+              <div class="carousel-item" data-lu-slide="1">
+                <img class="d-block" src="" alt="">
+                <div class="carousel-caption d-none d-md-block">
+                  <h5></h5>
+                  <p></p>
+                </div>
+              </div>
+              <div class="carousel-item" data-lu-slide="2">
+                <img class="d-block" src="" alt="">
+                <div class="carousel-caption d-none d-md-block">
+                  <h5></h5>
+                  <p></p>
+                </div>
+              </div>
+              <div class="carousel-item" data-lu-slide="3">
+                <img class="d-block" src="" alt="">
+                <div class="carousel-caption d-none d-md-block">
+                  <h5></h5>
+                  <p></p>
+                </div>
+              </div>
+              <div class="carousel-item" data-lu-slide="4">
+                <img class="d-block" src="" alt="">
+                <div class="carousel-caption d-none d-md-block">
+                  <h5></h5>
+                  <p></p>
+                </div>
+              </div>
             </div>
           </div>
 
-          <div id="apps" class="row">
+          <div id="apps" class="list-group">
 
           </div>
+
+          <div id="submit-modal" class="modal fade" tabindex="-1" role="dialog">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                    <h5 class="modal-title">Submit a recommendation</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <div style="color: red; font-weight: bold;" id="error"></div>
+
+                        N.B.: Submissions are manually reviewed.<br><br>
+                        <input class="input" id="appsearch" class="form-control" placeholder="Start typing a name or enter an AppID..." style="width: 100%;"><br>
+                        <hr>
+                        <div style="text-align: center;">
+                            <div class="g-recaptcha" data-sitekey="{{recaptcha_site_key}}"></div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-primary" id="submit">Submit</button>
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
     </body>
 </html>

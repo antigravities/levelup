@@ -73,13 +73,26 @@ func GetApp(appid int) *types.App {
 }
 
 // GetApps returns all of the AppIDs in the table.
-func GetApps() []int {
+func GetApps(includePending bool) []int {
 	util.Info("Fetching apps from DynamoDB")
 
-	res, err := db.Scan(&dynamodb.ScanInput{
+	util.Debug(fmt.Sprintf("IncludePending: %v", includePending))
+
+	input := &dynamodb.ScanInput{
 		TableName:            aws.String(table),
 		ProjectionExpression: aws.String("AppID"),
-	})
+	}
+
+	if !includePending {
+		input.FilterExpression = aws.String("IsPending <> :f")
+		input.ExpressionAttributeValues = map[string]*dynamodb.AttributeValue{
+			":f": {
+				BOOL: aws.Bool(true),
+			},
+		}
+	}
+
+	res, err := db.Scan(input)
 
 	if err != nil {
 		return []int{}
@@ -118,6 +131,8 @@ func PutApp(app *types.App) error {
 		Item:      av,
 		TableName: aws.String(table),
 	}); err != nil {
+		util.Debug(fmt.Sprintf("Error putting app: %v", err))
+		util.Debug(fmt.Sprintf("%v", av))
 		return err
 	}
 
@@ -134,10 +149,13 @@ func FindStaleApps() []*types.App {
 	res, err := db.Scan(&dynamodb.ScanInput{
 		TableName:            aws.String(table),
 		ProjectionExpression: aws.String("AppID"),
-		FilterExpression:     aws.String("LastUpdate < :t"),
+		FilterExpression:     aws.String("LastUpdate < :t AND IsPending <> :f"),
 		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
 			":t": {
 				N: aws.String(strconv.FormatInt(time.Now().Unix()-60*60, 10)),
+			},
+			":f": {
+				BOOL: aws.Bool(true),
 			},
 		},
 	})

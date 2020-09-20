@@ -42,6 +42,7 @@ type SteamStorefront struct {
 			ComingSoon bool   `json:"coming_soon"`
 			Date       string `json:"date"`
 		} `json:"release_date"`
+		Screenshots []SteamScreenshot
 	} `json:"data"`
 }
 
@@ -56,4 +57,10 @@ type SteamAppList struct {
 type SteamGame struct {
 	AppID int    `json:"appid"`
 	Name  string `json:"name"`
+}
+
+// SteamScreenshot represents a Screenshot in the storefront API
+type SteamScreenshot struct {
+	ID   int    `json:"id"`
+	Path string `json:"path_full"`
 }

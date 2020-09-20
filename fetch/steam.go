@@ -2,12 +2,12 @@ package fetch
 
 import (
 	"fmt"
+	"math/rand"
 	"strconv"
 	"strings"
 
 	"get.cutie.cafe/levelup/types"
 	"get.cutie.cafe/levelup/util"
-	"github.com/araddon/dateparse"
 )
 
 // Steam fetches an app's information from Steam and will update the passed App
@@ -30,17 +30,7 @@ func Steam(app *types.App, cc string) error {
 		app.Developers = sfapp.Developers
 		app.Publishers = sfapp.Publishers
 		app.Description = sfapp.ShortDescription
-
-		if sfapp.ReleaseDate.ComingSoon {
-			app.ReleaseYear = 0
-		} else {
-			date, err := dateparse.ParseAny(sfapp.ReleaseDate.Date)
-			if err != nil {
-				app.ReleaseYear = 0
-			} else {
-				app.ReleaseYear = date.Year()
-			}
-		}
+		app.Screenshot = sfapp.Screenshots[rand.Intn(len(sfapp.Screenshots))].Path
 
 		genres := []string{}
 
@@ -60,9 +50,10 @@ func Steam(app *types.App, cc string) error {
 	}
 
 	app.Prices.Steam[strings.ToLower(cc)] = types.AppPrice{
-		Price:    sfapp.Price.Final,
-		Discount: sfapp.Price.DiscountPercent,
-		URL:      fmt.Sprintf("https://store.steampowered.com/app/%d", app.AppID),
+		Price:         sfapp.Price.Final,
+		Discount:      sfapp.Price.DiscountPercent,
+		URL:           fmt.Sprintf("https://store.steampowered.com/app/%d", app.AppID),
+		OriginalPrice: sfapp.Price.Initial,
 	}
 
 	return nil

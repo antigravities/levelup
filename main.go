@@ -16,7 +16,7 @@ func main() {
 
 	search.Refresh()
 
-	for _, v := range db.GetApps() {
+	for _, v := range db.GetApps(false) {
 		db.GetApp(v)
 	}
 
