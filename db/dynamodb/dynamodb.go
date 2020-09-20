@@ -73,21 +73,27 @@ func GetApp(appid int) *types.App {
 }
 
 // GetApps returns all of the AppIDs in the table.
-func GetApps(includePending bool) []int {
+func GetApps(pending bool) []int {
 	util.Info("Fetching apps from DynamoDB")
 
-	util.Debug(fmt.Sprintf("IncludePending: %v", includePending))
+	util.Debug(fmt.Sprintf("pending: %v", pending))
 
 	input := &dynamodb.ScanInput{
 		TableName:            aws.String(table),
 		ProjectionExpression: aws.String("AppID"),
+		FilterExpression:     aws.String("IsPending <> :f"),
 	}
 
-	if !includePending {
-		input.FilterExpression = aws.String("IsPending <> :f")
+	if !pending {
 		input.ExpressionAttributeValues = map[string]*dynamodb.AttributeValue{
 			":f": {
 				BOOL: aws.Bool(true),
+			},
+		}
+	} else {
+		input.ExpressionAttributeValues = map[string]*dynamodb.AttributeValue{
+			":f": {
+				BOOL: aws.Bool(false),
 			},
 		}
 	}

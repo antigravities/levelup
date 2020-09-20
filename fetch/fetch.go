@@ -62,3 +62,14 @@ func All(app *types.App, cc string) error {
 
 	return nil
 }
+
+// AllRegions works the same as All, but fetches everything for all regions.
+func AllRegions(app *types.App) error {
+	for _, region := range types.Regions {
+		if err := All(app, region); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}

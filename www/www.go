@@ -4,10 +4,12 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"os"
+	"strconv"
 	"strings"
 	"time"
 
 	"get.cutie.cafe/levelup/db/dynamodb"
+	"get.cutie.cafe/levelup/fetch"
 	"get.cutie.cafe/levelup/search"
 	"get.cutie.cafe/levelup/types"
 	"get.cutie.cafe/levelup/util"
@@ -23,6 +25,10 @@ type post struct {
 	Recaptcha *string
 }
 
+type adminResponse struct {
+	UnapprovedApps []int
+}
+
 func handleStatus(ctx *fiber.Ctx, code int, message string) {
 	ctx.SendStatus(code)
 	ctx.SendString(message)
@@ -34,6 +40,11 @@ func Start() {
 	ok, rcSiteKey, _ := InitRecaptcha()
 	if !ok {
 		panic("No reCAPTCHA site key or server key found. Check your LU_RECAPTCHA_SITE and LU_RECAPTCHA_SERVER environment variables.")
+	}
+
+	admin, ok := os.LookupEnv("LU_ADMIN")
+	if !ok {
+		panic("No admin key found. Check your LU_ADMIN environment variable.")
 	}
 
 	app = fiber.New()
@@ -112,6 +123,56 @@ func Start() {
 		}
 
 		dynamodb.PutApp(app)
+
+		return nil
+	})
+
+	app.Get("/api/admin", func(ctx *fiber.Ctx) error {
+		if ctx.Query("key") != admin {
+			handleStatus(ctx, 400, "Invalid password")
+			return nil
+		}
+
+		switch ctx.Query("action") {
+		case "approve":
+			appid, err := strconv.Atoi(ctx.Query("appid"))
+
+			if err != nil || appid < 10 || !search.IsApp(appid) {
+				handleStatus(ctx, 400, "Bad AppID")
+				return nil
+			}
+
+			app := dynamodb.GetApp(appid)
+
+			if app.AppID == 0 {
+				app.AppID = appid
+				app.RecommendedAt = time.Now().Unix()
+			} else {
+				app.IsPending = false
+			}
+
+			if err := fetch.AllRegions(app); err != nil {
+				handleStatus(ctx, 500, "Could not update app")
+				return nil
+			}
+
+			break
+		case "delete":
+			// todo
+		default:
+		}
+
+		adminx := &adminResponse{
+			UnapprovedApps: dynamodb.GetApps(true),
+		}
+
+		bytes, err := json.Marshal(adminx)
+		if err != nil {
+			handleStatus(ctx, 500, "Internal server error")
+			return nil
+		}
+
+		handleStatus(ctx, 200, string(bytes))
 
 		return nil
 	})
