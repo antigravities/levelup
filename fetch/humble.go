@@ -50,5 +50,7 @@ func Humble(app *types.App, cc string) error {
 		}
 	}
 
+	util.Warn(fmt.Sprintf("Could not find matching Humble Store page for %d", app.AppID))
+
 	return nil
 }

@@ -5,6 +5,12 @@ import (
 	"os"
 	"runtime"
 	"strings"
+	"time"
+)
+
+var (
+	// LogFile represents the log file.
+	file *os.File
 )
 
 func log(level string, message string) {
@@ -19,7 +25,26 @@ func log(level string, message string) {
 
 	ctmp := strings.Split(caller, "/")
 
-	fmt.Printf("[%s] [%s] %s\n", level, ctmp[len(ctmp)-1], message)
+	msg := fmt.Sprintf("[%s] [%s] [%s] %s\n", time.Now().Format("2006-01-02 15:04:05 MST"), level, ctmp[len(ctmp)-1], message)
+
+	fmt.Printf(msg)
+	file.Write([]byte(msg))
+}
+
+// LogOpen opens the log file for writing.
+func LogOpen() {
+	var err error
+
+	file, err = os.OpenFile("server.log", os.O_CREATE|os.O_APPEND, 0644)
+
+	if err != nil {
+		panic(fmt.Errorf("could not open log files: %v", err))
+	}
+}
+
+// LogClose closes the log file.
+func LogClose() {
+	file.Close()
 }
 
 // Info logs a message with this log level

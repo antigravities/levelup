@@ -156,9 +156,28 @@ func Start() {
 				return nil
 			}
 
+			if err := dynamodb.PutApp(app); err != nil {
+				handleStatus(ctx, 500, "Could not store app")
+				return nil
+			}
+
 			break
 		case "delete":
-			// todo
+			appid, err := strconv.Atoi(ctx.Query("appid"))
+
+			if err != nil || appid < 10 || !search.IsApp(appid) {
+				handleStatus(ctx, 400, "Bad AppID")
+				return nil
+			}
+
+			err = dynamodb.DeleteApp(appid)
+
+			if err != nil {
+				handleStatus(ctx, 500, "Could not delete app")
+				return nil
+			}
+
+			break
 		default:
 		}
 

@@ -9,6 +9,9 @@ import (
 )
 
 func main() {
+	util.LogOpen()
+	defer util.LogClose()
+
 	util.Info("Level Up")
 	util.Info("Copyright (c) 2020 Cutie Cafe")
 
@@ -23,4 +26,6 @@ func main() {
 	scheduled.Start()
 
 	www.Start()
+
+	util.Info("Shutting down")
 }

@@ -2,7 +2,6 @@ package scheduled
 
 import (
 	"fmt"
-	"time"
 
 	"get.cutie.cafe/levelup/db/dynamodb"
 	"get.cutie.cafe/levelup/fetch"
@@ -27,16 +26,12 @@ func RefreshStaleApps() {
 	apps := dynamodb.FindStaleApps()
 
 	for _, app := range apps {
-		if err := fetch.AllRegions(app, region); err != nil {
+		if err := fetch.AllRegions(app); err != nil {
 			util.Warn("Hit an error, backing off for now!")
 			util.Warn(fmt.Sprintf("%v", err))
 			return
 		}
 
 		dynamodb.PutApp(app)
-
-		util.Debug("Waiting a moment...")
-		// Can only make 200 requests per 5 minutes to the Storefront API
-		time.Sleep(2000 * time.Millisecond)
 	}
 }

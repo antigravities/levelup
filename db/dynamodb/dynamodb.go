@@ -101,6 +101,7 @@ func GetApps(pending bool) []int {
 	res, err := db.Scan(input)
 
 	if err != nil {
+		util.Warn(fmt.Sprintf("Error: %v", err))
 		return []int{}
 	}
 
@@ -137,8 +138,7 @@ func PutApp(app *types.App) error {
 		Item:      av,
 		TableName: aws.String(table),
 	}); err != nil {
-		util.Debug(fmt.Sprintf("Error putting app: %v", err))
-		util.Debug(fmt.Sprintf("%v", av))
+		util.Warn(fmt.Sprintf("Error putting app: %v", err))
 		return err
 	}
 
@@ -167,7 +167,7 @@ func FindStaleApps() []*types.App {
 	})
 
 	if err != nil {
-		util.Debug(fmt.Sprintf("Error: %v", err))
+		util.Warn(fmt.Sprintf("Error: %v", err))
 		return []*types.App{}
 	}
 
@@ -186,4 +186,28 @@ func FindStaleApps() []*types.App {
 	util.Info(fmt.Sprintf("Found %d stale apps", len(apps)))
 
 	return apps
+}
+
+// DeleteApp deletes an app from the database.
+func DeleteApp(appid int) error {
+	util.Warn(fmt.Sprintf("Deleting app %d", appid))
+
+	_, err := db.DeleteItem(&dynamodb.DeleteItemInput{
+		TableName: aws.String(table),
+		Key: map[string]*dynamodb.AttributeValue{
+			"AppID": {
+				N: aws.String(strconv.Itoa(appid)),
+			},
+		},
+	})
+
+	if err != nil {
+		util.Warn(fmt.Sprintf("Error: %v", err))
+		return err
+	}
+
+	util.Debug("Deleting app from cache")
+	delete(Cache, appid)
+
+	return nil
 }
