@@ -26,7 +26,7 @@ func RefreshStaleApps() {
 	apps := dynamodb.FindStaleApps()
 
 	for _, app := range apps {
-		if err := fetch.AllRegions(app); err != nil {
+		if err := fetch.AllRegions(&app); err != nil {
 			util.Warn("Hit an error, backing off for now!")
 			util.Warn(fmt.Sprintf("%v", err))
 			return

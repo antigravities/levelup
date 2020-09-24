@@ -20,7 +20,7 @@ var (
 	db   *dynamodb.DynamoDB
 
 	// Cache stores apps obtained this session
-	Cache map[int]*types.App = make(map[int]*types.App)
+	Cache map[int]types.App = make(map[int]types.App)
 
 	table string
 )
@@ -44,7 +44,7 @@ func GetApp(appid int) *types.App {
 
 	if val, ok := Cache[appid]; ok {
 		util.Debug(fmt.Sprintf("Cache: hit"))
-		return val
+		return &val
 	}
 
 	util.Debug(fmt.Sprintf("Cache: miss"))
@@ -68,7 +68,7 @@ func GetApp(appid int) *types.App {
 		return nil
 	}
 
-	Cache[appid] = &app
+	Cache[appid] = app
 
 	return &app
 }
@@ -122,7 +122,7 @@ func GetApps(pending bool) []int {
 }
 
 // PutApp updates or creates an app in the table with new information from a *types.App.
-func PutApp(app *types.App) error {
+func PutApp(app types.App) error {
 	util.Info(fmt.Sprintf("Putting app %d", app.AppID))
 
 	if app.AppID == 0 {
@@ -152,7 +152,7 @@ func PutApp(app *types.App) error {
 }
 
 // FindStaleApps finds apps that haven't been updated in an hour or more
-func FindStaleApps() []*types.App {
+func FindStaleApps() []types.App {
 	util.Info("Finding stale apps")
 
 	res, err := db.Scan(&dynamodb.ScanInput{
@@ -171,13 +171,13 @@ func FindStaleApps() []*types.App {
 
 	if err != nil {
 		util.Warn(fmt.Sprintf("Error: %v", err))
-		return []*types.App{}
+		return []types.App{}
 	}
 
-	apps := []*types.App{}
+	apps := []types.App{}
 
 	for _, item := range res.Items {
-		app := &types.App{}
+		app := types.App{}
 
 		if err := dynamodbattribute.UnmarshalMap(item, &app); err != nil {
 			continue

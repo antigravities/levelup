@@ -116,7 +116,7 @@ func Start() {
 			return nil
 		}
 
-		app := &types.App{
+		app := types.App{
 			AppID:         *input.AppID,
 			RecommendedAt: time.Now().Unix(),
 			IsPending:     true,
@@ -157,7 +157,7 @@ func Start() {
 				return nil
 			}
 
-			if err := dynamodb.PutApp(app); err != nil {
+			if err := dynamodb.PutApp(*app); err != nil {
 				handleStatus(ctx, 500, "Could not store app")
 				return nil
 			}
