@@ -1,3 +1,4 @@
 *.exe
 map
 server.log
+.env

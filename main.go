@@ -9,6 +9,8 @@ import (
 )
 
 func main() {
+	util.LoadEnv()
+
 	util.LogOpen()
 	defer util.LogClose()
 
