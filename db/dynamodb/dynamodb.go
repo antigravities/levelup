@@ -159,7 +159,7 @@ func PutApp(app types.App) error {
 		return err
 	}
 
-	if !app.IsPending || app.AppID == 0 || app.Name == "" {
+	if !app.IsPending && app.AppID != 0 && app.Name != "" {
 		Cache[app.AppID] = app
 		util.Debug("Cache: stored")
 	}

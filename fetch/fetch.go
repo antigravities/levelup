@@ -115,7 +115,6 @@ func All(app *types.App, cc string) error {
 	}
 
 	if err := Fanatical(app, cc); err != nil {
-		util.Warn(fmt.Sprintf("Error: %v", err))
 		return err
 	}
 
@@ -128,6 +127,7 @@ func All(app *types.App, cc string) error {
 func AllRegions(app *types.App) error {
 	for _, region := range types.Regions {
 		if err := All(app, region); err != nil {
+			util.Warn(fmt.Sprintf("Error: %v", err))
 			return err
 		}
 
