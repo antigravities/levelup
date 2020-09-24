@@ -1,10 +1,12 @@
 package types
 
+// FanAlgoliaOutgoing specifies the outgoing request data structure
 type FanAlgoliaOutgoing struct {
 	Params string `json:"params"`
 	APIKey string `json:"apiKey"`
 }
 
+// FanAlgoliaIncoming specifies the incoming request data structure
 type FanAlgoliaIncoming struct {
 	Hits []struct {
 		ProductID       string             `json:"product_id"`

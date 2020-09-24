@@ -49,6 +49,14 @@
                   </div>
                 </li>
                 <li class="nav-item dropdown">
+                  <a class="nav-link dropdown-toggle" href="#" id="currency-dropdown" data-toggle="dropdown">Filter by...</a>
+                  <div class="dropdown-menu" id="currency-dropdown-options">
+                    <a href="#" class="dropdown-item replace" data-arg="demo" data-replace="1">Demo available</a>
+                    <a href="#" class="dropdown-item replace" data-arg="os" data-replace="linux">Available on SteamOS/Linux</a>
+                    <a href="#" class="dropdown-item replace" data-arg="os" data-replace="macos">Available on macOS</a>
+                  </div>
+                </li>
+                <li class="nav-item dropdown">
                   <a class="nav-link dropdown-toggle" href="#" id="currency-dropdown" data-toggle="dropdown">Currency (<span class="currency">$</span>)</a>
                   <div class="dropdown-menu" id="currency-dropdown-options">
                     <a href="#" class="dropdown-item replace" data-arg="cc" data-replace="us">$ (USD)</a>
@@ -59,11 +67,9 @@
                 <li class="nav-item dropdown">
                   <a class="nav-link dropdown-toggle" href="#" id="currency-dropdown" data-toggle="dropdown">Sort by</a>
                   <div class="dropdown-menu" id="currency-dropdown-options">
-                    <a href="#" class="dropdown-item replace" data-arg="sort" data-replace="price_asc">Price (Low to High)</a>
-                    <a href="#" class="dropdown-item replace" data-arg="sort" data-replace="price_desc">Price (High to Low)</a>
-                    <a href="#" class="dropdown-item replace" data-arg="sort" data-replace="name">Name</a>
-                    <a href="#" class="dropdown-item replace" data-arg="sort" data-replace="new">AppID (Newest)</a>
-                    <a href="#" class="dropdown-item replace" data-arg="sort" data-replace="old">AppID (Oldest)</a>
+                    <a href="#" class="dropdown-item replace" data-arg="sort" data-replace="price_asc">Price (low to high)</a>
+                    <a href="#" class="dropdown-item replace" data-arg="sort" data-replace="price_desc">Price (high to low)</a>
+                    <a href="#" class="dropdown-item replace" data-arg="sort" data-replace="wilson">Review score (high to low)</a>
                   </div>
                 </li>
                 <li class="nav-item">
@@ -123,7 +129,7 @@
             </div>
           </div>
 
-          <div id="apps" class="list-group">
+          <div id="apps">
 
           </div>
 

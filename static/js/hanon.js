@@ -7,6 +7,11 @@ let args = {};
 let selectedGenre = "";
 let underPrice = -1;
 let sortType = "name";
+let os = ""
+let demo = ""
+let page = 1
+
+let appsPerPage = 10;
 
 let genres = [];
 
@@ -31,7 +36,18 @@ function replaceHashParam(param, wth){
 }
 
 function buyAppButton(app){
-  return `${app.price == null ? `unavailable` : `<a class="btn btn-sm btn-primary" href="${app.price.url}">${app.price.provider} (${app.price.discount > 0 ? "-" + app.price.discount + "% " : ""}${app.price.price > 0 ? formatPrice(app.price.price/100, app.price.provider == "Humble") : "Free"})</a>`}`
+  return `${app.price == null ? `unavailable` : `<a class="btn btn-sm btn-primary" target="_blank" href="${app.price.url}">${app.price.provider} (${app.price.discount > 0 ? "-" + app.price.discount + "% " : ""}${app.price.price > 0 ? formatPrice(app.price.price/100, app.price.provider == "Humble") : "Free"})</a>`}`
+}
+
+function addPaginator(page, maxPages){
+  html = "";
+
+  if( page > 1 ) html += `<p style="float: left;"><a class="replace" data-arg="page" data-replace="${parseInt(page)-1}" href="#">Previous</a></p>`;
+  if( page < Math.ceil(maxPages) ) html += `<p style="float: right;"><a class="replace" data-arg="page" data-replace="${parseInt(page)+1}" href="#">Next</a></p>`;
+
+  html += `<p style="text-align: center;">Page <b>${page}</b> of ${Math.ceil(maxPages)}</p>`;
+
+  return html
 }
 
 // -- interactable functions
@@ -119,10 +135,10 @@ function initSearch(){
   })
 }
 
-function refreshApps(apps){
+function refreshApps(apps, page = 1, maxPages = 1){
   Array.from(document.querySelectorAll(".currency")).forEach(i => i.innerHTML = currency);
 
-  if( sortType != "added_asc" || selectedGenre != "" || underPrice != -1 ){
+  if( sortType != "added_asc" || selectedGenre != "" || underPrice != -1 || os != "" || demo != "" || page > 1 ){
     document.querySelector("#app-carousel").setAttribute("style", "display: none");
     document.querySelector("#apps").setAttribute("style", "margin-top: calc(56px + .5em);")
   } else {
@@ -152,34 +168,54 @@ function refreshApps(apps){
 
   if( apps.length < 1 ){
     html = "<h1>Oops!</h1>Your search didn't turn up anything. Broaden your search terms to find something you'll love.";  
-  }
+  } else {
 
-  for( app in apps ){
-    app = apps[app];
+    html += addPaginator(page, maxPages);
 
-    html += `
-      <div class="list-group-item flex-cloumn align-items-start">
-        <div class="d-flex w-100">
-          <img class="app-picture" data-appid="${app.AppID}" src="https://cdn.cloudflare.steamstatic.com/steam/apps/${app.AppID}/capsule_184x69.jpg">
-          <div class="ml-1 flex-fill">
-            <h5 class="mb-1 mt-0">${DOMPurify.sanitize(app.Name)}</h5>
-            <h6 class="mb-1 text-muted">${DOMPurify.sanitize(app.Developers[0].trim() == app.Publishers[0].trim() ? app.Developers[0] : app.Developers[0] + "; " + app.Publishers[0])}</h6>
+    html += `<div class="list-group">`;
+
+    for( app in apps ){
+      app = apps[app];
+
+      html += `
+        <div class="list-group-item flex-cloumn align-items-start">
+          <div class="d-flex w-100">
+            <img class="app-picture" data-appid="${app.AppID}" src="https://cdn.cloudflare.steamstatic.com/steam/apps/${app.AppID}/capsule_184x69.jpg">
+            <div class="ml-1 flex-fill">
+              <h5 class="mb-1 mt-0">${DOMPurify.sanitize(app.Name)}</h5>
+              <h6 class="mb-1 text-muted">${DOMPurify.sanitize(app.Developers[0].trim() == app.Publishers[0].trim() ? app.Developers[0] : app.Developers[0] + "; " + app.Publishers[0])}</h6>
+            </div>
+
+            <div class="mb-1">
+              <p style="text-align: center;">
+                ${buyAppButton(app)}
+              </p>
+            </div>
           </div>
 
-          <div class="mb-1">
-            ${buyAppButton(app)}
-          </div>
+          <p class="mb-0">
+            ${app.Genres.filter(i => i != "Early Access").map(i => "<a href='#' class='badge badge-info tag replace' data-arg='genre' data-replace='" + DOMPurify.sanitize(i) + "'>" + DOMPurify.sanitize(i) + "</a>").join(" ")}
+          </p>
+
+          <p class="mb-0">
+            ${DOMPurify.sanitize(app.Description)}
+          </p>
+
+          <p class="mb-0">
+            <small class="text-muted">
+              ${app.Platforms.Windows ? `<span class="platform windows" title="Windows">&nbsp;</span>`: ""}
+              ${app.Platforms.MacOS ? `<span class="platform mac" title="macOS">&nbsp;</span>`: ""}
+              ${app.Platforms.Linux ? `<span class="platform linux" title="SteamOS/Linux">&nbsp;</span>`: ""}
+              ${app.Demo ? `<a href="https://store.steampowered.com/app/427520/Factorio/#game_area_purchase" target="_blank">demo available</a>` : ""}
+            </small>
+          </p>
         </div>
+      `;
+    }
 
-        <p class="mb-0">
-          ${app.Genres.filter(i => i != "Early Access").map(i => "<a href='#' class='badge badge-info tag replace' data-arg='genre' data-replace='" + DOMPurify.sanitize(i) + "'>" + DOMPurify.sanitize(i) + "</a>").join(" ")}
-        </p>
+    html += "</div>";
 
-        <p class="mb-0">
-          ${DOMPurify.sanitize(app.Description)}
-        </p>
-      </div>
-    `;
+    html += addPaginator(page, maxPages);
   }
 
   document.querySelector("#apps").innerHTML = html;
@@ -216,6 +252,12 @@ function parseHash(){
 
   sortType = params.sort || "added_asc";
 
+  os = params.os || "";
+
+  demo = params.demo || "";
+
+  page = params.page || 1;
+
   country = params.cc || "us";
   if( country == "fr" ) currency = "&euro;";
   else if( country == "uk" ) currency = "&pound;";
@@ -233,8 +275,18 @@ function parseHash(){
       if( (apps[i].price.price/100) > underPrice ) return false;
     }
 
+    if( os != "" ){
+      if( os == "macos" && ! apps[i].Platforms.MacOS ) return false;
+      else if( ( os == "linux" || os == "steamos" ) && ! apps[i].Platforms.Linux ) return false;
+      else if( os == "windows" && ! apps[i].Platforms.Windows ) return false;
+    }
+
+    if( demo != "" && ! apps[i].Demo ) return false;
+
     return true;
   }).map(i => apps[i]);
+
+  scanPrices();
 
   switch(sortType){
     case "old":
@@ -256,19 +308,20 @@ function parseHash(){
         else return 0;
       });
       break;
-    case "name":
+    case "wilson":
     default:
       apply = apply.sort((a, b) => {
-        if( a.Name < b.Name ) return -1;
-        else if( b.Name > a.Name ) return 1;
+        if( a.Score < b.Score ) return 1;
+        else if( a.Score > b.Score ) return -1;
         else return 0;
       });
-      break;
   }
 
-  scanPrices();
+  let pages = apply.length/appsPerPage;
 
-  refreshApps(apply);
+  apply = apply.slice(appsPerPage*(page-1), appsPerPage*page);
+
+  refreshApps(apply, page, pages);
 }
 
 // -- hash change

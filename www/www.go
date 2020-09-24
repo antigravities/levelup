@@ -146,10 +146,11 @@ func Start() {
 
 			if app.AppID == 0 {
 				app.AppID = appid
-				app.RecommendedAt = time.Now().Unix()
 			} else {
 				app.IsPending = false
 			}
+
+			app.RecommendedAt = time.Now().Unix()
 
 			if err := fetch.AllRegions(app); err != nil {
 				handleStatus(ctx, 500, "Could not update app")
