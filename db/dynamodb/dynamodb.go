@@ -2,6 +2,7 @@ package dynamodb
 
 import (
 	"fmt"
+	"os"
 	"strconv"
 	"time"
 
@@ -20,10 +21,8 @@ var (
 
 	// Cache stores apps obtained this session
 	Cache map[int]*types.App = make(map[int]*types.App)
-)
 
-const (
-	table string = "LevelUp_Development"
+	table string
 )
 
 // Initialize and connect to DynamoDB
@@ -33,6 +32,8 @@ func Initialize() {
 	if err != nil {
 		panic(err)
 	}
+
+	table = os.Getenv("LU_TABLE")
 
 	db = dynamodb.New(sess)
 }
