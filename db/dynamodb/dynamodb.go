@@ -121,6 +121,22 @@ func GetApps(pending bool) []int {
 	return apps
 }
 
+// GetCachedApps filters through the cache for bad apps and returns only good ones.
+// TODO: figure out how bad apps get in the cache anyway
+func GetCachedApps() []types.App {
+	apps := []types.App{}
+
+	for _, v := range Cache {
+		if !v.IsPending || v.AppID == 0 || v.Name == "" {
+			continue
+		}
+
+		apps = append(apps, v)
+	}
+
+	return apps
+}
+
 // PutApp updates or creates an app in the table with new information from a *types.App.
 func PutApp(app types.App) error {
 	util.Info(fmt.Sprintf("Putting app %d", app.AppID))
@@ -143,7 +159,7 @@ func PutApp(app types.App) error {
 		return err
 	}
 
-	if !app.IsPending {
+	if !app.IsPending || app.AppID == 0 || app.Name == "" {
 		Cache[app.AppID] = app
 		util.Debug("Cache: stored")
 	}
