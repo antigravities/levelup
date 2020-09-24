@@ -7,7 +7,6 @@ type SteamStorefront struct {
 		Type                string   `json:"type"`
 		Name                string   `json:"name"`
 		AppID               uint     `json:"steam_appid"`
-		RequiredAge         uint     `json:"required_age"`
 		IsFree              bool     `json:"is_free"`
 		DetailedDescription string   `json:"detailed_description"`
 		ShortDescription    string   `json:"short_description"`
