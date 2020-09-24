@@ -127,7 +127,7 @@ func GetCachedApps() map[int]types.App {
 	apps := make(map[int]types.App)
 
 	for _, v := range Cache {
-		if !v.IsPending && v.AppID != 0 && v.Name == "" {
+		if v.IsPending || v.AppID == 0 || v.Name == "" {
 			continue
 		}
 
