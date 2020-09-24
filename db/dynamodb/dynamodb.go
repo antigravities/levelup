@@ -123,15 +123,15 @@ func GetApps(pending bool) []int {
 
 // GetCachedApps filters through the cache for bad apps and returns only good ones.
 // TODO: figure out how bad apps get in the cache anyway
-func GetCachedApps() []types.App {
-	apps := []types.App{}
+func GetCachedApps() map[int]types.App {
+	apps := make(map[int]types.App)
 
 	for _, v := range Cache {
-		if !v.IsPending || v.AppID == 0 || v.Name == "" {
+		if !v.IsPending && v.AppID != 0 && v.Name == "" {
 			continue
 		}
 
-		apps = append(apps, v)
+		apps[v.AppID] = v
 	}
 
 	return apps
