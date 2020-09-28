@@ -2,11 +2,15 @@ package www
 
 import (
 	"encoding/json"
+	"fmt"
+	"image/png"
 	"io/ioutil"
 	"os"
 	"strconv"
 	"strings"
 	"time"
+
+	"get.cutie.cafe/levelup/draw"
 
 	"get.cutie.cafe/levelup/db/dynamodb"
 	"get.cutie.cafe/levelup/fetch"
@@ -207,6 +211,42 @@ func Start() {
 
 		ctx.Set("Content-Type", "text/html")
 		ctx.SendString(strings.Replace(string(byt), "{{recaptcha_site_key}}", *rcSiteKey, -1))
+
+		return nil
+	})
+
+	app.Get("/api/image/:app.png", func(ctx *fiber.Ctx) error {
+		var (
+			appid int
+			app   *types.App
+			err   error
+		)
+
+		if appid, err = strconv.Atoi(ctx.Params("app")); err != nil || !search.IsApp(appid) {
+			handleStatus(ctx, 404, "Could not find app")
+			return nil
+		}
+
+		if app = dynamodb.GetApp(appid); app == nil {
+			handleStatus(ctx, 404, "Could not find app")
+			return nil
+		}
+
+		widget, err := draw.Draw(app)
+
+		if err != nil {
+			util.Warn(fmt.Sprintf("Error: %v", err))
+			handleStatus(ctx, 500, "Could not render app widget")
+			return nil
+		}
+
+		//ctx.SendStatus(200)
+		ctx.Set("Content-Type", "image/png")
+
+		if err := png.Encode(ctx, widget); err != nil {
+			util.Warn(fmt.Sprintf("Error: %v", err))
+			handleStatus(ctx, 500, "Could not render app widget")
+		}
 
 		return nil
 	})

@@ -16,7 +16,8 @@ var rqclient *http.Client = &http.Client{}
 
 const userAgent string = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/85.0.4183.102 Safari/537.36"
 
-func httpGet(url string) ([]byte, error) {
+// HTTPGet fetches a document using HTTP and returns the bytes of the file if found, or an error, if any
+func HTTPGet(url string) ([]byte, error) {
 	//	resp, err := http.Get(url)
 
 	req, err := http.NewRequest("GET", url, nil)
@@ -50,7 +51,7 @@ func httpGet(url string) ([]byte, error) {
 }
 
 func httpJSON(url string, cast interface{}) error {
-	resp, err := httpGet(url)
+	resp, err := HTTPGet(url)
 
 	if err != nil {
 		return err

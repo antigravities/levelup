@@ -23,7 +23,7 @@ func Fanatical(app *types.App, cc string) error {
 	if fanSearchKey == "" || time.Now().Unix()-fanSearchKeyFetchTime > 3600 {
 		fanSearchKey = ""
 
-		body, err := httpGet("https://www.fanatical.com/")
+		body, err := HTTPGet("https://www.fanatical.com/")
 		if err != nil {
 			return err
 		}

@@ -1,6 +1,8 @@
 package main
 
 import (
+	"os"
+
 	db "get.cutie.cafe/levelup/db/dynamodb"
 	"get.cutie.cafe/levelup/scheduled"
 	"get.cutie.cafe/levelup/search"
@@ -19,7 +21,11 @@ func main() {
 
 	db.Initialize()
 
-	search.Refresh()
+	if _, err := os.Stat("map"); os.IsNotExist(err) {
+		search.Refresh()
+	} else {
+		util.Debug("Skipping initial search engine refresh (for now...)")
+	}
 
 	for _, v := range db.GetApps(false) {
 		db.GetApp(v)

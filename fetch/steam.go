@@ -14,7 +14,7 @@ import (
 )
 
 func fetchAppPageInfo(appid int) (int, int, bool) {
-	appPage, err := httpGet(fmt.Sprintf("https://store.steampowered.com/app/%d", appid))
+	appPage, err := HTTPGet(fmt.Sprintf("https://store.steampowered.com/app/%d", appid))
 	if err != nil {
 		util.Warn(fmt.Sprintf("Error fetching reviews: %v", err))
 		return 0, 0, false
