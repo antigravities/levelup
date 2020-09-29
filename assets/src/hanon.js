@@ -1,3 +1,6 @@
+import $ from 'jquery';
+import DOMPurify from 'dompurify';
+
 let apps;
 let currency = "$";
 let country = "us";
@@ -40,7 +43,7 @@ function buyAppButton(app){
 }
 
 function addPaginator(page, maxPages){
-  html = "";
+  let html = "";
 
   if( page > 1 ) html += `<p style="float: left;"><a class="replace" data-arg="page" data-replace="${parseInt(page)-1}" href="#">Previous</a></p>`;
   if( page < Math.ceil(maxPages) ) html += `<p style="float: right;"><a class="replace" data-arg="page" data-replace="${parseInt(page)+1}" href="#">Next</a></p>`;
@@ -52,7 +55,7 @@ function addPaginator(page, maxPages){
 
 // -- interactable functions
 function scanPrices(){
-  for( app in apps ){
+  for( let app in apps ){
     app = apps[app];
 
     app.price = app.Prices[Object.keys(app.Prices).sort((j, k) => {
@@ -73,24 +76,27 @@ function scanPrices(){
 
 function initSearch(){
   $("#appsearch").typeahead({
-    classNames: {
-      input: "form-control",
-      menu: "dropdown-menu",
-      suggestion: "dropdown-item",
-      hint: "display-none"
-    }
-  }, {
-    name: "apps",
-    display: (v) => v.name + " (" + v.appid + ")",
-    source: new Bloodhound({
-      datumTokenizer: Bloodhound.tokenizers.whitespace,
-      queryTokenizer: Bloodhound.tokenizers.whitespace,
-      remote: {
-        url: '/api/search?q=%QUERY',
-        wildcard: '%QUERY'
+    order: "asc",
+    dynamic: true,
+    source: {
+      app: {
+        display: "name",
+        template: (_, item) => {
+          return item.name + " (" + item.appid + ")"; 
+        },
+        data: [],
+        ajax: {
+          type: "GET",
+          url: "/api/search?q={{query}}"
+        }
       }
-    }),
-    //limit: 10
+    },
+    callback: {
+      onClick: (node, a, item, event) => {
+        event.preventDefault();
+        document.querySelector("#appsearch").value = item.name + " (" + item.appid + ")";
+      }
+    }
   });
 
   $("#submit").on("click", () => {
@@ -174,7 +180,7 @@ function refreshApps(apps, page = 1, maxPages = 1){
 
     html += `<div class="list-group">`;
 
-    for( app in apps ){
+    for( let app in apps ){
       app = apps[app];
 
       html += `
@@ -267,7 +273,6 @@ function parseHash(){
 
   let apply = Object.keys(apps).filter(i => {
     if( selectedGenre != "" ){
-      console.log(apps[i].Genres.map(i => i.toLowerCase()));
       if( apps[i].Genres.map(i => i.toLowerCase()).indexOf(selectedGenre.toLowerCase()) < 0 ) return false;
     }
 
@@ -330,8 +335,9 @@ window.addEventListener("hashchange", parseHash);
 // -- load
 window.addEventListener("load", async () => {
   apps = await (await fetch("/api/suggestions")).json();
+  console.log(apps);
 
-  for(app of Object.keys(apps)){
+  for(let app of Object.keys(apps)){
     apps[app].Genres.forEach(i => {
       if( genres.indexOf(i) < 0 ){
         genres.push(i);
@@ -340,7 +346,7 @@ window.addEventListener("load", async () => {
   }
 
   let genresHtml = "";
-  for( i of genres ){
+  for(let i of genres ){
     genresHtml += `
       <a class="dropdown-item replace" href="#" data-arg="genre" data-replace="${i}">${i}</a>
     `;

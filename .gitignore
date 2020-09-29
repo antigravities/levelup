@@ -2,3 +2,5 @@
 map
 server.log
 .env
+assets/node_modules
+static
