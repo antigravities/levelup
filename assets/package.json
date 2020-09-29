@@ -20,7 +20,8 @@
     "jquery-typeahead": "^2.11.1",
     "popper.js": "^1.16.1",
     "style-loader": "^1.2.1",
-    "webpack": "^4.44.2"
+    "webpack": "^4.44.2",
+    "webpack-cli": "^3.3.12"
   },
   "devDependencies": {
     "css-loader": "^4.3.0"
