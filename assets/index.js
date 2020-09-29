@@ -8,7 +8,6 @@ require("jquery-typeahead")
 import 'bootstrap'
 
 import './src/hanon.js'
-import './src/chico.js'
 
 import './src/kotoha.css'
 import 'bootstrap/dist/css/bootstrap.css'

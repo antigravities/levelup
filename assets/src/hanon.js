@@ -1,5 +1,6 @@
 import $ from 'jquery';
 import DOMPurify from 'dompurify';
+import activate from './chico';
 
 let apps;
 let currency = "$";

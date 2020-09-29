@@ -1,4 +1,4 @@
-async function activate(){
+export default async function activate(){
     await (async () => {
         let items;
         let password;
