@@ -10,6 +10,7 @@ import (
 	"strings"
 	"time"
 
+	"get.cutie.cafe/levelup/conf"
 	"get.cutie.cafe/levelup/draw"
 
 	"get.cutie.cafe/levelup/db/dynamodb"
@@ -159,6 +160,12 @@ func Start() {
 			if err := fetch.AllRegions(app); err != nil {
 				handleStatus(ctx, 500, "Could not update app")
 				return nil
+			}
+
+			// HUGE HACK: if we're in serve-only mode mark the last fetch as ZERO so we can make sure
+			// we fetch the right prices when the fetch bot runs
+			if !conf.Fetch {
+				app.LastUpdate = 0
 			}
 
 			if err := dynamodb.PutApp(*app); err != nil {

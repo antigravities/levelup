@@ -45,11 +45,11 @@ export default async function activate(){
                 prmpt += "\n";
 
                 if( appType == 0 || appType == 1 ){
-                    prmpt += "Enter U to unapprove and delete this app.\n";
+                    prmpt += "Enter U to unapprove and delete this app..\n";
                 }
 
                 if( appType == -1 || appType == 0 ){
-                    prmpt += "Enter A to add and/or approve this app.\n";
+                    prmpt += "Enter A to add and/or approve this app. NOTE: if the server is running in SERVE MODE ONLY, prices may be inaccurate until the fetch bot runs\n";
                 }
 
                 prmpt += "Enter O to open this app in a new tab.\n";
