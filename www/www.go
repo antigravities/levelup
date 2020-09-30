@@ -79,7 +79,7 @@ func Start() {
 	})
 
 	app.Get("/api/suggestions", func(ctx *fiber.Ctx) error {
-		bytes, err := json.Marshal(dynamodb.GetCachedApps())
+		bytes, err := json.Marshal(dynamodb.GetFullApps(false))
 		if err != nil {
 			handleStatus(ctx, 500, "Internal server error")
 			return nil

@@ -19,9 +19,6 @@ var (
 	sess *session.Session
 	db   *dynamodb.DynamoDB
 
-	// Cache stores apps obtained this session
-	Cache map[int]types.App = make(map[int]types.App)
-
 	table string
 )
 
@@ -42,13 +39,6 @@ func Initialize() {
 func GetApp(appid int) *types.App {
 	util.Info(fmt.Sprintf("Fetching app %d", appid))
 
-	if val, ok := Cache[appid]; ok {
-		util.Debug(fmt.Sprintf("Cache: hit"))
-		return &val
-	}
-
-	util.Debug(fmt.Sprintf("Cache: miss"))
-
 	result, err := db.GetItem(&dynamodb.GetItemInput{
 		TableName: aws.String(table),
 		Key: map[string]*dynamodb.AttributeValue{
@@ -67,8 +57,6 @@ func GetApp(appid int) *types.App {
 	if err := dynamodbattribute.UnmarshalMap(result.Item, &app); err != nil {
 		return nil
 	}
-
-	Cache[appid] = app
 
 	return &app
 }
@@ -121,6 +109,54 @@ func GetApps(pending bool) []int {
 	return apps
 }
 
+// GetFullApps gets all of the information (i.e. more than just AppIDs) for the apps in the database
+func GetFullApps(pending bool) map[string]*types.App {
+	util.Info("Fetching apps from DynamoDB")
+
+	util.Debug(fmt.Sprintf("pending: %v", pending))
+
+	input := &dynamodb.ScanInput{
+		TableName:        aws.String(table),
+		FilterExpression: aws.String("IsPending <> :f"),
+	}
+
+	if !pending {
+		input.ExpressionAttributeValues = map[string]*dynamodb.AttributeValue{
+			":f": {
+				BOOL: aws.Bool(true),
+			},
+		}
+	} else {
+		input.ExpressionAttributeValues = map[string]*dynamodb.AttributeValue{
+			":f": {
+				BOOL: aws.Bool(false),
+			},
+		}
+	}
+
+	res, err := db.Scan(input)
+
+	if err != nil {
+		util.Warn(fmt.Sprintf("Error: %v", err))
+		return make(map[string]*types.App)
+	}
+
+	apps := make(map[string]*types.App)
+
+	for _, item := range res.Items {
+		wapp := &types.App{}
+
+		if err := dynamodbattribute.UnmarshalMap(item, &wapp); err != nil {
+			continue
+		}
+
+		apps[strconv.Itoa(wapp.AppID)] = wapp
+	}
+
+	return apps
+}
+
+/*
 // GetCachedApps filters through the cache for bad apps and returns only good ones.
 // TODO: figure out how bad apps get in the cache anyway
 func GetCachedApps() map[int]types.App {
@@ -135,7 +171,7 @@ func GetCachedApps() map[int]types.App {
 	}
 
 	return apps
-}
+} */
 
 // PutApp updates or creates an app in the table with new information from a *types.App.
 func PutApp(app types.App) error {
@@ -157,11 +193,6 @@ func PutApp(app types.App) error {
 	}); err != nil {
 		util.Warn(fmt.Sprintf("Error putting app: %v", err))
 		return err
-	}
-
-	if !app.IsPending && app.AppID != 0 && app.Name != "" {
-		Cache[app.AppID] = app
-		util.Debug("Cache: stored")
 	}
 
 	return nil
@@ -224,9 +255,6 @@ func DeleteApp(appid int) error {
 		util.Warn(fmt.Sprintf("Error: %v", err))
 		return err
 	}
-
-	util.Debug("Deleting app from cache")
-	delete(Cache, appid)
 
 	return nil
 }

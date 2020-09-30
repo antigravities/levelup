@@ -5,6 +5,8 @@ import (
 	"os"
 	"strconv"
 
+	"get.cutie.cafe/levelup/conf"
+
 	"get.cutie.cafe/levelup/fetch"
 	"get.cutie.cafe/levelup/types"
 	"get.cutie.cafe/levelup/util"
@@ -19,54 +21,62 @@ var (
 
 // Refresh the search index.
 func Refresh() error {
-	util.Info("Fetching Steam app list")
+	if conf.Serve {
+		util.Info("Fetching Steam app list")
 
-	wapps, err := fetch.SteamAppList()
-	if err != nil {
+		wapps, err := fetch.SteamAppList()
+		if err != nil {
+			return err
+		}
+
+		if _, err := os.Stat("map"); !os.IsNotExist(err) {
+			util.Debug("Using existing index")
+
+			if index == nil {
+				index, err = bleve.Open("map")
+				if err != nil {
+					util.Debug(fmt.Sprintf("Error: %v", err))
+					return err
+				}
+			}
+		} else {
+			util.Debug("Using new index")
+
+			if index == nil {
+				index, err = bleve.NewUsing("map", bleve.NewIndexMapping(), scorch.Name, scorch.Name, nil)
+				if err != nil {
+					util.Debug(fmt.Sprintf("Error: %v", err))
+					return err
+				}
+			}
+		}
+
+		util.Info("Indexing " + strconv.Itoa(len(wapps)) + " apps")
+
+		util.Debug("Started batch")
+		batch := index.NewBatch()
+		for _, val := range wapps {
+			batch.Index(strconv.Itoa(val.AppID), val)
+			apps[strconv.Itoa(val.AppID)] = val
+		}
+		util.Debug("Ended batch")
+
+		util.Debug("Running batch operations")
+		index.Batch(batch)
+
+		util.Info("Done indexing")
 		return err
-	}
-
-	if _, err := os.Stat("map"); !os.IsNotExist(err) {
-		util.Debug("Using existing index")
-
-		if index == nil {
-			index, err = bleve.Open("map")
-			if err != nil {
-				util.Debug(fmt.Sprintf("Error: %v", err))
-				return err
-			}
-		}
 	} else {
-		util.Debug("Using new index")
-
-		if index == nil {
-			index, err = bleve.NewUsing("map", bleve.NewIndexMapping(), scorch.Name, scorch.Name, nil)
-			if err != nil {
-				util.Debug(fmt.Sprintf("Error: %v", err))
-				return err
-			}
-		}
+		return nil
 	}
-
-	util.Info("Indexing " + strconv.Itoa(len(wapps)) + " apps")
-
-	util.Debug("Started batch")
-	batch := index.NewBatch()
-	for _, val := range wapps {
-		batch.Index(strconv.Itoa(val.AppID), val)
-		apps[strconv.Itoa(val.AppID)] = val
-	}
-	util.Debug("Ended batch")
-
-	util.Debug("Running batch operations")
-	index.Batch(batch)
-
-	util.Info("Done indexing")
-	return err
 }
 
 // Query performs a query against the index.
 func Query(qs string) ([]types.SteamGame, error) {
+	if !conf.Serve {
+		return []types.SteamGame{}, nil
+	}
+
 	q := bleve.NewMatchQuery(qs)
 	q.SetFuzziness(0)
 

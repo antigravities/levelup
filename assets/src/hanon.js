@@ -335,6 +335,18 @@ window.addEventListener("hashchange", parseHash);
 
 // -- load
 window.addEventListener("load", async () => {
+  let se = false;
+
+  document.querySelector("#send-feedback").addEventListener("click", e => {
+    if( ! se ){
+      e.preventDefault();
+      let dev = "cafe.eituc@srepoleved".split("").reverse().join("").replace("efac", "cafe");
+      e.target.innerText =  "send feedback to " + dev;
+      e.target.setAttribute("href", "mailto:" + dev);
+      se = true;
+    }
+  });
+
   apps = await (await fetch("/api/suggestions")).json();
   console.log(apps);
 
