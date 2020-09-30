@@ -8,4 +8,4 @@ npm run webpack --mode="production"
 # build app
 cd ..
 go build -i
-graftcp ./levelup
+./levelup -mode=$1
