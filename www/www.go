@@ -163,9 +163,14 @@ func Start() {
 			}
 
 			// HUGE HACK: if we're in serve-only mode mark the last fetch as ZERO so we can make sure
-			// we fetch the right prices when the fetch bot runs
+			// we fetch the right prices when the fetch bot runs. Fetch bot is also configured to
+			// post webhooks when last update was 0
 			if !conf.Fetch {
 				app.LastUpdate = 0
+			} else {
+				if err := fetch.PostDiscord(app.AppID); err != nil {
+					util.Warn(fmt.Sprintf("Error: %v", err))
+				}
 			}
 
 			if err := dynamodb.PutApp(*app); err != nil {

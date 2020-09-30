@@ -193,7 +193,7 @@ func Draw(app *types.App) (*image.RGBA, error) {
 
 	// draw bottom footer
 	graphics.SetFillColor(color.RGBA{255, 255, 255, 255})
-	drawText(graphics, 0, float64(250+nextOffset+50), "View more recommendations at recommendations.steamsal.es - by Cutie Café", 10, imgWidth)
+	drawText(graphics, 0, float64(250+nextOffset+50), "View more recommendations at recommendations.steamsal.es", 10, imgWidth)
 
 	return image, nil
 }

@@ -88,16 +88,18 @@ func httpPostJSON(url string, data interface{}, cast interface{}) error {
 
 	defer resp.Body.Close()
 
-	bytes, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		util.Warn(fmt.Sprintf("Error: %v", err))
-		return err
-	}
+	if cast != nil {
+		bytes, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			util.Warn(fmt.Sprintf("Error: %v", err))
+			return err
+		}
 
-	err = json.Unmarshal(bytes, cast)
-	if err != nil {
-		util.Warn(fmt.Sprintf("Error: %v", err))
-		return err
+		err = json.Unmarshal(bytes, cast)
+		if err != nil {
+			util.Warn(fmt.Sprintf("Error: %v", err))
+			return err
+		}
 	}
 
 	return nil

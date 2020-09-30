@@ -28,6 +28,8 @@ func RefreshStaleApps() {
 		apps := dynamodb.FindStaleApps()
 
 		for _, app := range apps {
+			shouldWebhook := app.LastUpdate == 0
+
 			if err := fetch.AllRegions(&app); err != nil {
 				util.Warn("Hit an error, backing off for now!")
 				util.Warn(fmt.Sprintf("%v", err))
@@ -35,6 +37,12 @@ func RefreshStaleApps() {
 			}
 
 			dynamodb.PutApp(app)
+
+			if shouldWebhook {
+				if err := fetch.PostDiscord(app.AppID); err != nil {
+					util.Warn(fmt.Sprintf("Error: %v", err))
+				}
+			}
 		}
 	} else {
 		util.Warn("Skipping stale app refresh, we're only serving.")

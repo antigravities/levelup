@@ -354,7 +354,6 @@ window.addEventListener("load", async () => {
   });
 
   apps = await (await fetch("/api/suggestions")).json();
-  console.log(apps);
 
   for(let app of Object.keys(apps)){
     apps[app].Genres.forEach(i => {

@@ -2,6 +2,7 @@ export default async function activate(){
     await (async () => {
         let items;
         let password;
+        let apps;
 
         while( true ){
             password = prompt("Enter the admin password, or press enter/click cancel to exit", "");
@@ -10,6 +11,7 @@ export default async function activate(){
         
             try {
                 items = await (await fetch("/api/admin?key=" + password)).json();
+                apps = await (await fetch("/api/suggestions")).json()
             } catch(e){
                 continue;
             }
@@ -63,6 +65,7 @@ export default async function activate(){
                     case "a":
                         try {
                             items = await (await fetch("/api/admin?key=" + password + "&action=approve&appid=" + appid)).json();
+                            apps = await (await fetch("/api/suggestions")).json()
                         } catch(e){
                             alert("Action failed: " + e);
                         }
@@ -70,6 +73,7 @@ export default async function activate(){
                     case "u":
                         try {
                             items = await (await fetch("/api/admin?key=" + password + "&action=delete&appid=" + appid)).json();
+                            apps = await (await fetch("/api/suggestions")).json()
                         } catch(e) {
                             alert("Action failed: " + e);
                         }
