@@ -39,8 +39,8 @@ function replaceHashParam(param, wth){
   window.location.hash = Object.keys(args).filter(i => i.length > 0).map(i => i + "=" + args[i]).join(";");
 }
 
-function buyAppButton(app){
-  return `${app.price == null ? `unavailable` : `<a class="btn btn-sm btn-primary" target="_blank" href="${app.price.url}">${app.price.provider} (${app.price.discount > 0 ? "-" + app.price.discount + "% " : ""}${app.price.price > 0 ? formatPrice(app.price.price/100, app.price.provider == "Humble") : "Free"})</a>`}`
+function buyAppButton(app, w100 = false){
+  return `${app.price == null ? `unavailable` : `<a class="btn btn-sm btn-primary${w100 ? " w-100" : ""}" target="_blank" href="${app.price.url}">${app.price.provider} (${app.price.discount > 0 ? "-" + app.price.discount + "% " : ""}${app.price.price > 0 ? formatPrice(app.price.price/100, app.price.provider == "Humble") : "Free"})</a>`}`
 }
 
 function addPaginator(page, maxPages){
@@ -193,7 +193,7 @@ function refreshApps(apps, page = 1, maxPages = 1){
               <h6 class="mb-1 text-muted">${DOMPurify.sanitize(app.Developers[0].trim() == app.Publishers[0].trim() ? app.Developers[0] : app.Developers[0] + "; " + app.Publishers[0])}</h6>
             </div>
 
-            <div class="mb-1">
+            <div class="mb-1 d-none d-md-block">
               <p style="text-align: center;">
                 ${buyAppButton(app)}
               </p>
@@ -216,6 +216,12 @@ function refreshApps(apps, page = 1, maxPages = 1){
               ${app.Demo ? `<a href="https://store.steampowered.com/app/427520/Factorio/#game_area_purchase" target="_blank">demo available</a>` : ""}
             </small>
           </p>
+
+          <div class="mt-2 d-xs-block d-sm-block d-md-none w-100">
+            <p style="text-align: center;">
+              ${buyAppButton(app, true)}
+            </p>
+          </div>
         </div>
       `;
     }
