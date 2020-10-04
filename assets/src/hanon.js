@@ -17,6 +17,8 @@ let page = 1
 
 let appsPerPage = 10;
 
+let appSearchHTML;
+
 let genres = [];
 
 // -- utility functions
@@ -127,7 +129,17 @@ function initSearch(){
         return;
       }
 
-      $(".modal-body").text("Thanks for your submission!")
+      $(".modal-body").html("Thanks for your submission! <a id='submit-another' href='#'>Submit another?</a>")
+
+      $("#submit-another").on("click", () => {
+        document.querySelector("#submit-modal").querySelector(".modal-body").innerHTML = appSearchHTML;
+        $("#submit").removeClass("disabled");
+        $("#submit").text("Submit");
+        $("#submit").attr("style", "display: block;");
+        initSearch();
+        grecaptcha.render(document.querySelector(".g-recaptcha"));
+      });
+
       $("#submit").attr("style", "display: none;");
     }).catch(() => {
       $("#error").text("Could not submit. Try again later.");
@@ -341,6 +353,15 @@ window.addEventListener("hashchange", parseHash);
 
 // -- load
 window.addEventListener("load", async () => {
+  let newDiv = document.createElement("div");
+
+  newDiv.innerHTML = document.querySelector("#submit-modal > .modal-dialog > .modal-content > .modal-body").innerHTML;
+  newDiv.querySelector(".g-recaptcha").innerHTML = "";
+
+  appSearchHTML = newDiv.innerHTML;
+
+  console.log(appSearchHTML);
+
   let se = false;
 
   document.querySelector("#send-feedback").addEventListener("click", e => {
