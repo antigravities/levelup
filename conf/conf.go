@@ -29,6 +29,7 @@ func Init() {
 	OpMode = flag.String("mode", "all", "Operation mode. Possible options are fetch, serve, and all (which is both).")
 	forceDiscord := flag.Bool("force-discord", false, "Force discord reposting?")
 	forceFetch := flag.Bool("force-fetch", false, "Force re-fetch of all apps?")
+
 	flag.Parse()
 
 	if forceDiscord != nil {
