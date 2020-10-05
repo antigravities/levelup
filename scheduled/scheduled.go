@@ -7,6 +7,7 @@ import (
 	"get.cutie.cafe/levelup/db/dynamodb"
 	"get.cutie.cafe/levelup/fetch"
 	"get.cutie.cafe/levelup/search"
+	"get.cutie.cafe/levelup/types"
 	"get.cutie.cafe/levelup/util"
 	"github.com/carlescere/scheduler"
 )
@@ -25,7 +26,22 @@ func Start() {
 // RefreshStaleApps refreshes all of the apps that are stale (LastUpdated > 1 hour ago).
 func RefreshStaleApps() {
 	if conf.Fetch {
-		apps := dynamodb.FindStaleApps()
+		var apps []types.App
+
+		if !conf.ForceFetch {
+			apps = dynamodb.FindStaleApps()
+		} else {
+			pApps := dynamodb.GetFullApps(false)
+
+			for _, app := range pApps {
+				apps = append(apps, *app)
+			}
+		}
+
+		defer func() {
+			conf.ForceFetch = false
+			conf.ForceDiscord = false
+		}()
 
 		for _, app := range apps {
 			shouldWebhook := app.LastUpdate == 0
@@ -38,7 +54,7 @@ func RefreshStaleApps() {
 
 			dynamodb.PutApp(app)
 
-			if shouldWebhook {
+			if shouldWebhook || conf.ForceDiscord {
 				if err := fetch.PostDiscord(app.AppID); err != nil {
 					util.Warn(fmt.Sprintf("Error: %v", err))
 				}
