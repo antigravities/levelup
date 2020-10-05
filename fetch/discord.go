@@ -3,6 +3,7 @@ package fetch
 import (
 	"fmt"
 	"os"
+	"time"
 
 	"get.cutie.cafe/levelup/types"
 	"get.cutie.cafe/levelup/util"
@@ -15,8 +16,17 @@ func PostDiscord(AppID int) error {
 		return nil
 	}
 
+	if err := httpPostJSON(os.Getenv("LU_POST_APPROVAL"), &types.DiscordOutgoingWebhook{
+		Content:  fmt.Sprintf("%sapi/image/%d.png", os.Getenv("LU_WEBROOT"), AppID),
+		Username: "recommendations.steamsal.es",
+	}, nil); err != nil {
+		return err
+	}
+
+	time.Sleep(1 * time.Second)
+
 	return httpPostJSON(os.Getenv("LU_POST_APPROVAL"), &types.DiscordOutgoingWebhook{
-		Content:  fmt.Sprintf("%s/api/image/%d.png", os.Getenv("LU_WEBROOT"), AppID),
+		Content:  fmt.Sprintf("<https://store.steampowered.com/app/%d>", AppID),
 		Username: "recommendations.steamsal.es",
 	}, nil)
 }
