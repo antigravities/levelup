@@ -104,6 +104,7 @@ function initSearch(){
 
   $("#submit").on("click", () => {
     if( $("#appsearch").val() == "" || ( isNaN(parseInt($("#appsearch").val())) && /\((\d*)\)$/.exec($("#appsearch").val()) == null ) ) return $("#error").text("Please enter an app to suggest.");
+    if( $("#review").val().trim() == "" || $("#review").val().trim().length < 10 || $("#review").val().trim().length > 300 ) return $("#error").text("You must include why you want to recommend this title, and your response must be 10 to 300 characters long.");
     if( grecaptcha.getResponse() == "" ) return $("#error").text("Are you a robot?");
 
     $("#error").text("");
@@ -114,6 +115,7 @@ function initSearch(){
       method: "POST",
       body: JSON.stringify({
           AppID: isNaN(parseInt($("#appsearch").val())) ? parseInt(/\((\d*)\)$/.exec($("#appsearch").val())[1]) : (parseInt($("#appsearch").val())),
+          Review: $("#review").val(),
           Recaptcha: grecaptcha.getResponse()
       }),
       headers: {
@@ -196,6 +198,8 @@ function refreshApps(apps, page = 1, maxPages = 1){
     for( let app in apps ){
       app = apps[app];
 
+      console.log(app.Review);
+
       html += `
         <div class="list-group-item flex-cloumn align-items-start">
           <div class="d-flex w-100">
@@ -213,6 +217,15 @@ function refreshApps(apps, page = 1, maxPages = 1){
           </div>
 
           <p class="mb-0">
+            <small class="text-muted">
+              ${app.Platforms.Windows ? `<span class="platform windows" title="Windows">&nbsp;</span>`: ""}
+              ${app.Platforms.MacOS ? `<span class="platform mac" title="macOS">&nbsp;</span>`: ""}
+              ${app.Platforms.Linux ? `<span class="platform linux" title="SteamOS/Linux">&nbsp;</span>`: ""}
+              ${app.Demo ? `<a href="https://store.steampowered.com/app/${app.AppID}/#game_area_purchase" target="_blank">demo available</a>` : ""}
+            </small>
+            
+            <br>
+
             ${app.Genres.filter(i => i != "Early Access").map(i => "<a href='#' class='badge badge-info tag replace' data-arg='genre' data-replace='" + DOMPurify.sanitize(i) + "'>" + DOMPurify.sanitize(i) + "</a>").join(" ")}
           </p>
 
@@ -220,14 +233,12 @@ function refreshApps(apps, page = 1, maxPages = 1){
             ${DOMPurify.sanitize(app.Description)}
           </p>
 
-          <p class="mb-0">
-            <small class="text-muted">
-              ${app.Platforms.Windows ? `<span class="platform windows" title="Windows">&nbsp;</span>`: ""}
-              ${app.Platforms.MacOS ? `<span class="platform mac" title="macOS">&nbsp;</span>`: ""}
-              ${app.Platforms.Linux ? `<span class="platform linux" title="SteamOS/Linux">&nbsp;</span>`: ""}
-              ${app.Demo ? `<a href="https://store.steampowered.com/app/427520/Factorio/#game_area_purchase" target="_blank">demo available</a>` : ""}
-            </small>
-          </p>
+          ${app.Review ? `
+            <blockquote class="blockquote mb-0">
+              <span style="font-size: 0.8em; font-style: italic;">${DOMPurify.sanitize(app.Review)}</span>
+              <footer class="blockquote-footer"><cite>the recommender</cite></footer>
+            </blockquote>
+          ` : ""}
 
           <div class="mt-2 d-xs-block d-sm-block d-md-none w-100">
             <p style="text-align: center;">
@@ -359,8 +370,6 @@ window.addEventListener("load", async () => {
   newDiv.querySelector(".g-recaptcha").innerHTML = "";
 
   appSearchHTML = newDiv.innerHTML;
-
-  console.log(appSearchHTML);
 
   let se = false;
 

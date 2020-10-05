@@ -28,10 +28,11 @@ var app *fiber.App
 type post struct {
 	AppID     *int
 	Recaptcha *string
+	Review    *string
 }
 
 type adminResponse struct {
-	UnapprovedApps []int
+	UnapprovedApps map[string]*types.App
 }
 
 func handleStatus(ctx *fiber.Ctx, code int, message string) {
@@ -99,7 +100,7 @@ func Start() {
 			return nil
 		}
 
-		if input.Recaptcha == nil || *input.Recaptcha == "" || input.AppID == nil || *input.AppID < 10 || !search.IsApp(*input.AppID) {
+		if input.Recaptcha == nil || *input.Recaptcha == "" || input.AppID == nil || *input.AppID < 10 || !search.IsApp(*input.AppID) || input.Review == nil || len(*input.Review) < 10 || len(*input.Review) > 300 {
 			handleStatus(ctx, 400, "Bad request")
 			return nil
 		}
@@ -125,6 +126,7 @@ func Start() {
 			AppID:         *input.AppID,
 			RecommendedAt: time.Now().Unix(),
 			IsPending:     true,
+			Review:        *input.Review,
 		}
 
 		dynamodb.PutApp(app)
@@ -199,7 +201,7 @@ func Start() {
 		}
 
 		adminx := &adminResponse{
-			UnapprovedApps: dynamodb.GetApps(true),
+			UnapprovedApps: dynamodb.GetFullApps(true),
 		}
 
 		bytes, err := json.Marshal(adminx)

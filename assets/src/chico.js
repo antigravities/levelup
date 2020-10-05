@@ -20,7 +20,7 @@ export default async function activate(){
         }
 
         while( true ){
-            let appid = prompt("Enter an AppID to manipulate, or anything else to exit.\n\nThere are " + items.UnapprovedApps.length + " unapproved apps:\n\n" + items.UnapprovedApps.join("\n") + "", "");
+            let appid = prompt("Enter an AppID to manipulate, or anything else to exit.\n\nThere are " + Object.keys(items.UnapprovedApps).length + " unapproved apps:\n\n" + Object.keys(items.UnapprovedApps).join("\n") + "", "");
 
             if( isNaN(parseInt(appid)) ) return;
             
@@ -33,7 +33,7 @@ export default async function activate(){
                     prmpt += "Is an approved, suggested app (" + apps[appid].Name + ")\n"
                     appType = 1;
                 }
-                else if( items.UnapprovedApps.indexOf(parseInt(appid)) > -1 ){
+                else if( Object.keys(items.UnapprovedApps).indexOf(appid) > -1 ){
                     prmpt += "Is an unapproved app\n"
                     appType = 0;
                 }
@@ -42,12 +42,12 @@ export default async function activate(){
                     appType = -1;
                 }
 
-                console.log(items.UnapprovedApps);
-
                 prmpt += "\n";
 
+                if( items.UnapprovedApps[appid] ) prmpt += (items.UnapprovedApps[appid].Review || "(no review)") + "\n\n";
+
                 if( appType == 0 || appType == 1 ){
-                    prmpt += "Enter U to unapprove and delete this app..\n";
+                    prmpt += "Enter U to unapprove and delete this app.\n";
                 }
 
                 if( appType == -1 || appType == 0 ){

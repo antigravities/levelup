@@ -18,6 +18,7 @@ type App struct {
 	ReviewsTotal    int
 	Demo            bool
 	Score           float64
+	Review          string
 	Platforms       struct {
 		Windows bool
 		MacOS   bool

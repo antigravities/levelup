@@ -132,12 +132,14 @@
                     <div class="modal-body">
                         <div style="color: red; font-weight: bold;" id="error"></div>
 
-                        N.B.: Submissions are manually reviewed.<br><br>
+                        N.B.: Submissions are manually reviewed.<br>
+
+                        <hr>
 
                         <div class="typeahead__container">
                             <div class="typeahead__field">
                                 <div class="typeahead__query">
-                                    <input id="appsearch" name="user_v1[query]" placeholder="Search" autocomplete="off">
+                                    <input id="appsearch" placeholder="Search for a title, or enter an AppID" autocomplete="off">
                                 </div>
                                 <div class="typeahead__button">
                                     <button type="submit">
@@ -147,6 +149,12 @@
                             </div>
                           </div>
                         <hr>
+                        
+                        Why do you recommend this title? (10-250 characters, required)<br>
+                        <textarea class="w-100 form-control" id="review" placeholder="Start typing..."></textarea>
+
+                        <hr>
+
                         <div style="text-align: center;">
                             <div class="g-recaptcha" data-sitekey="{{recaptcha_site_key}}"></div>
                         </div>
