@@ -26,7 +26,7 @@ func PostDiscord(AppID int) error {
 	time.Sleep(1 * time.Second)
 
 	return httpPostJSON(os.Getenv("LU_POST_APPROVAL"), &types.DiscordOutgoingWebhook{
-		Content:  fmt.Sprintf("<https://store.steampowered.com/app/%d>", AppID),
+		Content:  fmt.Sprintf("<https://s.team/a/%d>", AppID),
 		Username: "recommendations.steamsal.es",
 	}, nil)
 }
