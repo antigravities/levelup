@@ -13,6 +13,7 @@ let underPrice = -1;
 let sortType = "name";
 let os = ""
 let demo = ""
+let discounted = ""
 let page = 1
 
 let appsPerPage = 10;
@@ -198,8 +199,6 @@ function refreshApps(apps, page = 1, maxPages = 1){
     for( let app in apps ){
       app = apps[app];
 
-      console.log(app.Review);
-
       html += `
         <div class="list-group-item flex-cloumn align-items-start">
           <div class="d-flex w-100">
@@ -234,8 +233,8 @@ function refreshApps(apps, page = 1, maxPages = 1){
           </p>
 
           ${app.Review ? `
-            <blockquote class="blockquote mb-0">
-              <span style="font-size: 0.8em; font-style: italic;">${DOMPurify.sanitize(app.Review)}</span>
+            <blockquote class="review blockquote">
+              ${DOMPurify.sanitize(app.Review)}
               <footer class="blockquote-footer"><cite>the recommender</cite></footer>
             </blockquote>
           ` : ""}
@@ -301,6 +300,10 @@ function parseHash(){
 
   underPrice = ! isNaN(parseFloat(params.under)) ? parseFloat(params.under) : -1;
 
+  discounted = params.discounted || "";
+
+  scanPrices();
+
   let apply = Object.keys(apps).filter(i => {
     if( selectedGenre != "" ){
       if( apps[i].Genres.map(i => i.toLowerCase()).indexOf(selectedGenre.toLowerCase()) < 0 ) return false;
@@ -318,10 +321,10 @@ function parseHash(){
 
     if( demo != "" && ! apps[i].Demo ) return false;
 
+    if( discounted != "" && apps[i].price.discount < 1 ) return false;
+
     return true;
   }).map(i => apps[i]);
-
-  scanPrices();
 
   switch(sortType){
     case "old":
