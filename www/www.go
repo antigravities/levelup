@@ -131,6 +131,10 @@ func Start() {
 
 		dynamodb.PutApp(app)
 
+		if err := fetch.PostDiscordPreapprove(app.AppID, app.Review); err != nil {
+			util.Warn(fmt.Sprintf("Error: %v", err))
+		}
+
 		return nil
 	})
 

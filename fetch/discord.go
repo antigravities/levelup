@@ -30,3 +30,16 @@ func PostDiscord(AppID int) error {
 		Username: "recommendations.steamsal.es",
 	}, nil)
 }
+
+// PostDiscordPreapprove posts a pre-approval message to LU_POST_PREAPPROVAL
+func PostDiscordPreapprove(AppID int, recommendation string) error {
+	if os.Getenv("LU_POST_PREAPPROVAL") == "" {
+		util.Warn("Not sending a Web hook because empty LU_POST_PREAPPROVAL")
+		return nil
+	}
+
+	return httpPostJSON(os.Getenv("LU_POST_PREAPPROVAL"), &types.DiscordOutgoingWebhook{
+		Content:  fmt.Sprintf("https://store.steampowered.com/app/%d\n```%s```", AppID, recommendation),
+		Username: "recommendations.steamsal.es",
+	}, nil)
+}
