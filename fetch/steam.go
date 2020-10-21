@@ -89,6 +89,10 @@ func Steam(app *types.App, cc string) error {
 			genres = append(genres, g.Description)
 		}
 
+		for _, t := range AppInfo(app.AppID) {
+			genres = append(genres, t)
+		}
+
 		app.Genres = genres
 
 		app.Platforms.Windows = sfapp.Platforms.Windows

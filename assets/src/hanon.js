@@ -58,6 +58,7 @@ function formatPrice(price, forceUS){
 
 function replaceHashParam(param, wth){
   args[param] = wth;
+  if( param != "page" ) args.page = 1;
   window.location.hash = Object.keys(args).filter(i => i.length > 0).map(i => i + "=" + args[i]).join(";");
 }
 
@@ -244,7 +245,7 @@ function refreshApps(apps, page = 1, maxPages = 1){
             
             <br>
 
-            ${app.Genres.filter(i => i != "Early Access").map(i => "<a href='#' class='badge badge-info tag replace' data-arg='genre' data-replace='" + DOMPurify.sanitize(i) + "'>" + DOMPurify.sanitize(i) + "</a>").join(" ")}
+            ${app.Genres.filter(i => i != "Early Access").slice(0, 10).map(i => "<a href='#' class='badge badge-info tag replace' data-arg='genre' data-replace='" + DOMPurify.sanitize(i) + "'>" + DOMPurify.sanitize(i) + "</a>").join(" ")}
           </p>
 
           <p class="mb-0">
