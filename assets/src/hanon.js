@@ -39,7 +39,55 @@ let appsPerPage = 10;
 
 let appSearchHTML;
 
-let genres = [];
+let genres = {};
+let genreSections = [
+  [
+    "Action",
+    "Adventure",
+    "Casual",
+    "Indie",
+    "Racing",
+    "RPG",
+    "Simulation",
+    "Sports",
+    "Strategy",
+    "Metroidvania",
+    "Sandbox",
+    "Puzzle",
+    "Visual Novel",
+    "FPS",
+    "Arcade",
+    "Platformer",
+    "Shooter",
+    "Souls-like",
+    "Survival",
+    "City Builder",
+    "Interactive Fiction",
+    "Twin Stick Shooter",
+    "3D Platformer",
+    "Base Building",
+    "Side Scroller",
+    "Third-Person Shooter",
+    "Puzzle Platformer",
+    "Beat 'em Up",
+    "Roguelike",
+    "Time Management",
+    "Trading Card Game",
+    "Shoot 'Em Up",
+    "Turn-Based"
+  ],
+  [
+    "Singleplayer",
+    "Multiplayer",
+    "Online Co-Op",
+    "Local Multiplayer",
+    "Massively Multiplayer",
+    "Local Co-Op",
+    "Co-op",
+    "Split Screen"
+  ]
+]
+
 
 // -- utility functions
 function clone(elem){
@@ -173,8 +221,13 @@ function initSearch(){
 
   $("#show-submit-modal").on("click", e => {
     e.preventDefault();
-    $("#submit-modal").modal('show')
+    $("#submit-modal").modal('show');
   })
+
+  $("#show-store-tags-modal").on("click", e => {
+    e.preventDefault();
+    $("#store-tags-modal").modal('show');
+  });
 }
 
 function refreshApps(apps, page = 1, maxPages = 1){
@@ -410,19 +463,48 @@ window.addEventListener("load", async () => {
 
   for(let app of Object.keys(apps)){
     apps[app].Genres.forEach(i => {
-      if( genres.indexOf(i) < 0 ){
-        genres.push(i);
-      }
+      if( ! genres[i] ) genres[i] = 0;
+      genres[i]++;
     });
   }
 
-  let genresHtml = "";
-  for(let i of genres ){
-    genresHtml += `
-      <a class="dropdown-item replace" href="#" data-arg="genre" data-replace="${i}">${i}</a>
-    `;
+  let sortedGenres = Object.keys(genres).sort((a,b) => {
+    if(genres[a] > genres[b]) return -1;
+    else if( genres[a] < genres[b] ) return 1;
+    else {
+      if( a < b ) return -1;
+      else if( a > b ) return 1;
+      else return 0;
+    }
+  });
+
+  let sections = [];
+  for( let i=0; i<genreSections.length; i++ ){
+    sections[i] = [];
+
+    for( let j of sortedGenres ){
+      if( genreSections[i].indexOf(j) > -1 ){
+        sections[i].push(j);
+      }
+    }
+
+    for( let j of sections[i] ){
+      sortedGenres.splice(sortedGenres.indexOf(j), 1);
+    }
   }
-  document.querySelector("#genre-dropdown-options").innerHTML = genresHtml;
+
+  sections[sections.length] = sortedGenres;
+
+  let genresHtml = "";
+  for(let i in sections ){
+    for( let j of sections[i] ){
+      genresHtml += `
+        <a class="badge badge-info replace" href="#" data-arg="genre" data-replace="${j}" data-dismiss="modal">${j} (${genres[j]})</a>
+      `;
+    }
+    genresHtml += "<hr>";
+  }
+  document.querySelector("#store-tags-modal-body").innerHTML = genresHtml;
 
   parseHash();
   initSearch();
