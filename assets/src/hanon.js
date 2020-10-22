@@ -230,7 +230,7 @@ function initSearch(){
   });
 }
 
-function refreshApps(apps, page = 1, maxPages = 1){
+function refreshApps(lApps, page = 1, maxPages = 1){
   Array.from(document.querySelectorAll(".currency")).forEach(i => i.innerHTML = currency);
 
   if( sortType != "added_asc" || selectedGenre != "" || underPrice != -1 || os != "" || demo != "" || page > 1 ){
@@ -261,7 +261,7 @@ function refreshApps(apps, page = 1, maxPages = 1){
 
   let html = "";
 
-  if( apps.length < 1 ){
+  if( lApps.length < 1 ){
     html = "<h1>Oops!</h1>Your search didn't turn up anything. Broaden your search terms to find something you'll love.";  
   } else {
 
@@ -269,8 +269,8 @@ function refreshApps(apps, page = 1, maxPages = 1){
 
     html += `<div class="list-group">`;
 
-    for( let app in apps ){
-      app = apps[app];
+    for( let app in lApps ){
+      app = lApps[app];
 
       html += `
         <div class="list-group-item flex-cloumn align-items-start">
