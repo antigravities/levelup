@@ -115,6 +115,10 @@ func All(app *types.App, cc string) error {
 		if err := Humble(app, cc); err != nil {
 			return err
 		}
+
+		if err := GreenMan(app, cc); err != nil {
+			return err
+		}
 	}
 
 	if err := Fanatical(app, cc); err != nil {
