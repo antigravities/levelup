@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"net/url"
 	"time"
 
 	"get.cutie.cafe/levelup/types"
@@ -14,19 +15,26 @@ import (
 
 var rqclient *http.Client = &http.Client{}
 
-const userAgent string = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/85.0.4183.102 Safari/537.36"
+const userAgent string = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/85.0.4183.121 Safari/537.36"
 
 // HTTPGet fetches a document using HTTP and returns the bytes of the file if found, or an error, if any
-func HTTPGet(url string) ([]byte, error) {
+func HTTPGet(rurl string) ([]byte, error) {
 	//	resp, err := http.Get(url)
 
-	req, err := http.NewRequest("GET", url, nil)
+	req, err := http.NewRequest("GET", rurl, nil)
 	if err != nil {
 		util.Warn(fmt.Sprintf("Error: %v", err))
 		return []byte{}, err
 	}
 
 	req.Header.Set("User-Agent", userAgent)
+
+	u, err := url.Parse(rurl)
+	if err == nil {
+		req.Header.Set("Host", u.Hostname())
+	} else {
+		util.Warn(fmt.Sprintf("Could not parse URL %s", rurl))
+	}
 
 	resp, err := rqclient.Do(req)
 	if err != nil {
@@ -54,10 +62,12 @@ func httpJSON(url string, cast interface{}) error {
 	resp, err := HTTPGet(url)
 
 	if err != nil {
+		util.Debug(string(resp))
 		return err
 	}
 
 	if err := json.Unmarshal(resp, cast); err != nil {
+		util.Debug(string(resp))
 		return err
 	}
 
@@ -113,6 +123,10 @@ func All(app *types.App, cc string) error {
 
 	if cc == "us" {
 		if err := Humble(app, cc); err != nil {
+			return err
+		}
+
+		if err := GameBillet(app, cc); err != nil {
 			return err
 		}
 	}

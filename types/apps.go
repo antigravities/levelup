@@ -28,9 +28,10 @@ type App struct {
 
 // AppPrices represents the prices of an app
 type AppPrices struct {
-	Steam     map[string]AppPrice
-	Humble    map[string]AppPrice
-	Fanatical map[string]AppPrice
+	Steam      map[string]AppPrice
+	Humble     map[string]AppPrice
+	Fanatical  map[string]AppPrice
+	GameBillet map[string]AppPrice
 }
 
 // AppPrice represents the price of an app
