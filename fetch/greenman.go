@@ -2,6 +2,7 @@ package fetch
 
 import (
 	"fmt"
+	"net/url"
 	"strings"
 
 	"get.cutie.cafe/levelup/types"
@@ -14,8 +15,13 @@ func GreenMan(app *types.App, cc string) error {
 
 	query := &types.GreenManSearch{}
 
-	if err := httpJSON(fmt.Sprintf("https://api.greenmangaming.com/api/v2/quick_search_results/%s", app.Name), query); err != nil {
-		return err
+	if err := httpJSON(fmt.Sprintf("https://api.greenmangaming.com/api/v2/quick_search_results/%s", url.QueryEscape(app.Name)), query); err != nil {
+		if strings.Index(err.Error(), "status code 404") < 0 {
+			return err
+		}
+
+		util.Warn(fmt.Sprintf("Could not find Green Man Gaming page for %s", app.Name))
+		return nil
 	}
 
 	next := ""
