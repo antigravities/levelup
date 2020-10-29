@@ -155,8 +155,13 @@ func Draw(app *types.App) (*image.RGBA, error) {
 
 	prevWidth := float64(0)
 
+	gens := app.Genres
+	if len(app.Genres) > 5 {
+		gens = gens[0:5]
+	}
+
 	// genres text
-	for _, g := range app.Genres[0:5] {
+	for _, g := range gens {
 		graphics.SetFillColor(color.RGBA{0x17, 0xa2, 0xb8, 255})
 
 		graphics.SetFontSize(10)
