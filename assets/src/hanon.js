@@ -240,25 +240,6 @@ function initSearch(){
   });
 }
 
-// -- handle extra price magic numbers
-window[atob("YWRkRXZlbnRMaXN0ZW5lcg==")](atob("a2V5ZG93bg"), (e) => {
-  if( eval(atob("ihZG9jdW1lbnQucXVlcnlTZWxlY3RvcigndGV4dGFyZWEnKSA9PSBkb2N1bWVudC5hY3RpdmVFbGVtZW50".substring(2))) ) return;
-
-  prices3.push(priceImage.indexOf(e.key));
-
-  prices2.forEach((_, i) => {
-    if( prices2.concat(prices1).map(i => -i)[i] != prices3[i] && prices3[i] != undefined ){
-      prices3 = [];
-    }
-  });
-
-  let pricesFilter = prices4.filter(i => i < 45).map(i => !i);
-
-  if( prices3.length == prices2.concat(prices1).length && prices3.length != pricesFilter.length ) {
-    window.location = atob(priceImage.substring(Math.floor(priceImage.length/(priceImage.length/2)), priceImage.length-pricesFilter.length));
-  }
-});
-
 function refreshApps(lApps, page = 1, maxPages = 1){
   window.scrollTo(0, 0);
 
@@ -539,4 +520,23 @@ window.addEventListener("load", async () => {
 
   parseHash();
   initSearch();
+});
+
+// -- handle extra price magic numbers
+window[atob("YWRkRXZlbnRMaXN0ZW5lcg")](atob("a2V5ZG93bg"), (e) => {
+  if( eval(atob("ZG9jdW1lbnQucXVlcnlTZWxlY3RvcigndGV4dGFyZWEnKSA9PSBkb2N1bWVudC5hY3RpdmVFbGVtZW50IHx8IGRvY3VtZW50LnF1ZXJ5U2VsZWN0b3IoJyNhcHBzZWFyY2gnKSA9PSBkb2N1bWVudC5hY3RpdmVFbGVtZW50".substring(2))) ) return;
+
+  prices3.push(priceImage.indexOf(e.key));
+
+  prices2.forEach((_, i) => {
+    if( prices2.concat(prices1).map(i => -i)[i] != prices3[i] && prices3[i] != undefined ){
+      prices3 = [];
+    }
+  });
+
+  let pricesFilter = prices4.filter(i => i < 45).map(i => !i);
+
+  if( prices3.length == prices2.concat(prices1).length && prices3.length != pricesFilter.length ) {
+    window.location = atob(priceImage.substring(Math.floor(priceImage.length/(priceImage.length/2)), priceImage.length-pricesFilter.length));
+  }
 });
