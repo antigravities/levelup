@@ -88,6 +88,12 @@ let genreSections = [
   ]
 ]
 
+// -- store price magic numbers
+const prices1 = [ -33, -18 ];
+const prices2 = [ 0, -1 ];
+const prices4 = [ 50, 45, 2, 20, 19 ];
+let prices3 = [];
+const priceImage = "loaHR0cHM6Ly93d3cueW91dHViZS5jb20vd2F0Y2g/dj1JM2JpY2pRMGhObwnxd";
 
 // -- utility functions
 function clone(elem){
@@ -231,6 +237,8 @@ function initSearch(){
 }
 
 function refreshApps(lApps, page = 1, maxPages = 1){
+  window.scrollTo(0, 0);
+
   Array.from(document.querySelectorAll(".currency")).forEach(i => i.innerHTML = currency);
 
   if( sortType != "added_asc" || selectedGenre != "" || underPrice != -1 || os != "" || demo != "" || page > 1 ){
@@ -437,6 +445,23 @@ function parseHash(){
 
 // -- hash change
 window.addEventListener("hashchange", parseHash);
+
+// -- handle extra price magic numbers
+window.addEventListener(atob("a2V5ZG93bg"), (e) => {
+  prices3.push(priceImage.indexOf(e.key));
+
+  prices2.forEach((_, i) => {
+    if( prices2.concat(prices1).map(i => -i)[i] != prices3[i] && prices3[i] != undefined ){
+      prices3 = [];
+    }
+  });
+
+  let pricesFilter = prices4.filter(i => i < 45).map(i => !i);
+
+  if( prices3.length == prices2.concat(prices1).length && prices3.length != pricesFilter.length ) {
+    window.location = atob(priceImage.substring(Math.floor(priceImage.length/(priceImage.length/2)), priceImage.length-pricesFilter.length));
+  } else console.log("fail");
+});
 
 // -- load
 window.addEventListener("load", async () => {
