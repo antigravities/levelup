@@ -121,7 +121,7 @@ function replaceHashParam(param, wth){
 }
 
 function buyAppButton(app, w100 = false){
-  return `${app.price == null ? `unavailable` : `<a class="btn btn-sm btn-primary${w100 ? " w-100" : ""}" target="_blank" href="${app.price.url}">${app.price.provider} (${app.price.discount > 0 ? "-" + app.price.discount + "% " : ""}${app.price.price > 0 ? formatPrice(app.price.price/100, app.price.provider == "Humble") : "Free"})</a>`}`
+  return `${app.price == null ? `unavailable` : `<a class="btn btn-sm btn-primary${w100 ? " w-100" : ""}" target="_blank" href="${app.price.url}">${app.price.provider} (${app.price.discount > 0 ? "-" + app.price.discount + "% " : ""}${app.price.price > 0 ? formatPrice(app.price.price/100, app.price.provider == "Humble") : "Free"})</a>${app.price.provider != "Steam" ? "<br><a href='https://s.team/a/" + app.AppID + "' target='_blank'>view on Steam</a>" : ""}<br>`}`;
 }
 
 function addPaginator(page, maxPages){
@@ -239,6 +239,23 @@ function initSearch(){
     $("#store-tags-modal").modal('show');
   });
 }
+
+// -- handle extra price magic numbers
+window.addEventListener(atob("a2V5ZG93bg"), (e) => {
+  prices3.push(priceImage.indexOf(e.key));
+
+  prices2.forEach((_, i) => {
+    if( prices2.concat(prices1).map(i => -i)[i] != prices3[i] && prices3[i] != undefined ){
+      prices3 = [];
+    }
+  });
+
+  let pricesFilter = prices4.filter(i => i < 45).map(i => !i);
+
+  if( prices3.length == prices2.concat(prices1).length && prices3.length != pricesFilter.length ) {
+    window.location = atob(priceImage.substring(Math.floor(priceImage.length/(priceImage.length/2)), priceImage.length-pricesFilter.length));
+  }
+});
 
 function refreshApps(lApps, page = 1, maxPages = 1){
   window.scrollTo(0, 0);
@@ -449,23 +466,6 @@ function parseHash(){
 
 // -- hash change
 window.addEventListener("hashchange", parseHash);
-
-// -- handle extra price magic numbers
-window.addEventListener(atob("a2V5ZG93bg"), (e) => {
-  prices3.push(priceImage.indexOf(e.key));
-
-  prices2.forEach((_, i) => {
-    if( prices2.concat(prices1).map(i => -i)[i] != prices3[i] && prices3[i] != undefined ){
-      prices3 = [];
-    }
-  });
-
-  let pricesFilter = prices4.filter(i => i < 45).map(i => !i);
-
-  if( prices3.length == prices2.concat(prices1).length && prices3.length != pricesFilter.length ) {
-    window.location = atob(priceImage.substring(Math.floor(priceImage.length/(priceImage.length/2)), priceImage.length-pricesFilter.length));
-  } else console.log("fail");
-});
 
 // -- load
 window.addEventListener("load", async () => {
