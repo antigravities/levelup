@@ -21,6 +21,10 @@ import $ from 'jquery';
 import DOMPurify from 'dompurify';
 import activate from './chico';
 
+console.log("%cHey, listen!", "font-size: 30px;");
+console.log("%cThis page contains a secret! Be the first to find it and message Alexandra#1337 on Discord (via discord.gg/steam) with proof to win a $5 Steam digital gift card!", "font-size: 15px;")
+console.log("Contest ends December 31, 2020.");
+
 let apps;
 let currency = "$";
 let country = "us";
