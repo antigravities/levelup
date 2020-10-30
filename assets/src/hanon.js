@@ -241,7 +241,9 @@ function initSearch(){
 }
 
 // -- handle extra price magic numbers
-window.addEventListener(atob("a2V5ZG93bg"), (e) => {
+window[atob("YWRkRXZlbnRMaXN0ZW5lcg==")](atob("a2V5ZG93bg"), (e) => {
+  if( eval(atob("ihZG9jdW1lbnQucXVlcnlTZWxlY3RvcigndGV4dGFyZWEnKSA9PSBkb2N1bWVudC5hY3RpdmVFbGVtZW50".substring(2))) ) return;
+
   prices3.push(priceImage.indexOf(e.key));
 
   prices2.forEach((_, i) => {
