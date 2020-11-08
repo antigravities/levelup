@@ -204,7 +204,7 @@ func FindStaleApps() []types.App {
 
 	res, err := db.Scan(&dynamodb.ScanInput{
 		TableName:            aws.String(table),
-		ProjectionExpression: aws.String("AppID, LastUpdate, RecommendedAt, Review"),
+		ProjectionExpression: aws.String("AppID, LastUpdate, RecommendedAt, Review, HelpfulPositive, HelpfulTotal"),
 		FilterExpression:     aws.String("LastUpdate < :t AND IsPending <> :f"),
 		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
 			":t": {

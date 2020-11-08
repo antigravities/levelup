@@ -9,6 +9,7 @@ import (
 	"get.cutie.cafe/levelup/search"
 	"get.cutie.cafe/levelup/types"
 	"get.cutie.cafe/levelup/util"
+	"get.cutie.cafe/levelup/www"
 	"github.com/carlescere/scheduler"
 )
 
@@ -21,6 +22,8 @@ func Start() {
 	})
 
 	scheduler.Every(30).Minutes().Run(RefreshStaleApps)
+
+	scheduler.Every(6).Hours().Run(www.ResetHelpfulRateLimit)
 }
 
 // RefreshStaleApps refreshes all of the apps that are stale (LastUpdated > 1 hour ago).

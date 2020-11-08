@@ -23,12 +23,20 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-var app *fiber.App
+var (
+	app                *fiber.App
+	wasHelpfulRecently map[string]int
+)
 
 type post struct {
 	AppID     *int
 	Recaptcha *string
 	Review    *string
+}
+
+type wasHelpful struct {
+	AppID      *int
+	WasHelpful *bool
 }
 
 type adminResponse struct {
@@ -41,8 +49,19 @@ func handleStatus(ctx *fiber.Ctx, code int, message string) {
 	return
 }
 
+// findIP finds the most likely IP of the user, checking X-Forwarded-For first.
+func findIP(ctx *fiber.Ctx) string {
+	if len(ctx.IPs()) > 0 {
+		return ctx.IPs()[0]
+	}
+
+	return ctx.IP()
+}
+
 // Start the web server.
 func Start() {
+	ResetHelpfulRateLimit()
+
 	ok, rcSiteKey, _ := InitRecaptcha()
 	if !ok {
 		panic("No reCAPTCHA site key or server key found. Check your LU_RECAPTCHA_SITE and LU_RECAPTCHA_SERVER environment variables.")
@@ -135,6 +154,49 @@ func Start() {
 			util.Warn(fmt.Sprintf("Error: %v", err))
 		}
 
+		return nil
+	})
+
+	app.Post("/api/helpful", func(ctx *fiber.Ctx) error {
+		ip := findIP(ctx)
+		if _, ok := wasHelpfulRecently[ip]; !ok {
+			wasHelpfulRecently[ip] = 0
+		}
+
+		if wasHelpfulRecently[ip] > 4 {
+			util.Warn(fmt.Sprintf("%s hit 'was helpful' rate limit", ip))
+			handleStatus(ctx, 400, "You've rated too much as (un)helpful recently. Try again later.")
+			return nil
+		}
+
+		wasHelpfulRecently[ip]++
+
+		input := &wasHelpful{}
+		if err := ctx.BodyParser(input); err != nil {
+			handleStatus(ctx, 400, "Could not parse request")
+			return nil
+		}
+
+		if input.AppID == nil || input.WasHelpful == nil {
+			handleStatus(ctx, 400, "Not all fields filled")
+			return nil
+		}
+
+		app := dynamodb.GetApp(*input.AppID)
+		if app == nil || app.IsPending {
+			handleStatus(ctx, 404, "Target app not found")
+			return nil
+		}
+
+		if *input.WasHelpful {
+			app.HelpfulPositive++
+		}
+
+		app.HelpfulTotal++
+
+		dynamodb.PutApp(*app)
+
+		handleStatus(ctx, 200, "Thanks!")
 		return nil
 	})
 
@@ -278,6 +340,11 @@ func Start() {
 		util.Info("App server starting on port 4000")
 		app.Listen(":4000")
 	}
+}
+
+// ResetHelpfulRateLimit resets the "was this helpful?" rate limit
+func ResetHelpfulRateLimit() {
+	wasHelpfulRecently = make(map[string]int)
 }
 
 // InitRecaptcha initializes the reCAPTCHA stuff.

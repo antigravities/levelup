@@ -24,6 +24,8 @@ type App struct {
 		MacOS   bool
 		Linux   bool
 	}
+	HelpfulPositive int
+	HelpfulTotal    int
 }
 
 // AppPrices represents the prices of an app

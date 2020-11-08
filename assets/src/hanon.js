@@ -111,6 +111,8 @@ let genreSections = [
   ]
 ]
 
+let appReviewHelpful = ( window.localStorage.appReviewHelpful ? window.localStorage.appReviewHelpful.split(",") : []);
+
 // -- store price magic numbers
 const prices1 = [ -33, -18 ];
 const prices2 = [ 0, -1 ];
@@ -155,6 +157,31 @@ function addPaginator(page, maxPages){
 }
 
 // -- interactable functions
+async function wasAppHelpful(appid, wasHelpful){
+  if( appReviewHelpful.indexOf(appid) > 0 ) return false;
+  appReviewHelpful.push(appid);
+
+  let resp = await (fetch("/api/helpful", {
+    method: "POST",
+    body: JSON.stringify({
+        AppID: appid,
+        WasHelpful: wasHelpful,
+    }),
+    headers: {
+        "Content-Type": "application/json"
+    }
+  }))
+
+  window.localStorage.appReviewHelpful = appReviewHelpful;
+
+  if( resp.status != 200 ){
+    alert(await resp.text())
+    return false;
+  }
+
+  return true;
+}
+
 function scanPrices(){
   for( let app in apps ){
     app = apps[app];
@@ -341,6 +368,16 @@ function refreshApps(lApps, page = 1, maxPages = 1){
               ${DOMPurify.sanitize(app.Review)}
               <footer class="blockquote-footer"><cite>the recommender</cite></footer>
             </blockquote>
+            
+            <p class="text-muted mb-0" style="font-size: 85%">
+              ${appReviewHelpful.indexOf("" + app.AppID) < 0 ? `
+                Was this recommendation helpful? <a class="badge badge-primary helpful" href="#" data-recommend="true" data-appid="${app.AppID}">Yes</a> <a class="badge badge-danger helpful" href="#" data-recommend="false" data-appid="${app.AppID}">No</a><br>
+              ` : ""}
+
+              ${app.HelpfulTotal > 0 ? `
+                ${app.HelpfulPositive} ${app.HelpfulPositive == 1 ? "person" : "people"} found this helpful
+              ` : ""}
+            </p>
           ` : ""}
 
           <div class="mt-2 d-xs-block d-sm-block d-md-none w-100">
@@ -370,6 +407,17 @@ function refreshApps(lApps, page = 1, maxPages = 1){
 
   document.querySelectorAll(".fprice").forEach(i => {
     i.innerHTML = formatPrice(i.getAttribute("data-price"));
+  });
+
+  document.querySelectorAll(".helpful").forEach(i => {
+    i.addEventListener("click", async e => {
+      e.preventDefault();
+
+      let pe = i.parentElement;
+      pe.innerText = "working...";
+      if( ! await wasAppHelpful(parseInt(i.getAttribute("data-appid")), i.getAttribute("data-recommend") == "true") ) pe.innerText = "error";
+      else pe.innerText = "Thanks for your feedback!";
+    });
   });
 }
 
