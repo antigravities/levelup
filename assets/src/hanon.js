@@ -142,7 +142,7 @@ function replaceHashParam(param, wth){
 }
 
 function buyAppButton(app, w100 = false){
-  return `${app.price == null ? `unavailable` : `<a class="btn btn-sm btn-primary${w100 ? " w-100" : ""}" target="_blank" href="${app.price.url}">${app.price.provider} (${app.price.discount > 0 ? "-" + app.price.discount + "% " : ""}${app.price.price > 0 ? formatPrice(app.price.price/100, app.price.provider == "Humble") : "Free"})</a>${app.price.provider != "Steam" ? "<br><a href='https://s.team/a/" + app.AppID + "' target='_blank'>view on Steam</a>" : ""}<br>`}`;
+  return `${app.price == null ? `unavailable` : `<a class="btn btn-sm btn-primary${w100 ? " w-100" : ""}" target="_blank" href="${app.price.url}">${app.price.provider} (${app.price.discount > 0 ? "-" + app.price.discount + "% " : ""}${app.price.price > 0 ? formatPrice(app.price.price/100, app.price.provider == "Humble") : "Free"})</a><br>`}`;
 }
 
 function addPaginator(page, maxPages){
@@ -351,7 +351,8 @@ function refreshApps(lApps, page = 1, maxPages = 1){
               ${app.Platforms.Windows ? `<span class="platform windows" title="Windows">&nbsp;</span>`: ""}
               ${app.Platforms.MacOS ? `<span class="platform mac" title="macOS">&nbsp;</span>`: ""}
               ${app.Platforms.Linux ? `<span class="platform linux" title="SteamOS/Linux">&nbsp;</span>`: ""}
-              ${app.Demo ? `<a href="https://store.steampowered.com/app/${app.AppID}/#game_area_purchase" target="_blank">demo available</a>` : ""}
+              <a href="https://s.team/a/${app.AppID}">view on Steam</a>
+              ${app.Demo ? ` &middot; <a href="https://store.steampowered.com/app/${app.AppID}/#game_area_purchase" target="_blank">demo available</a>` : ""}
             </small>
             
             <br>
