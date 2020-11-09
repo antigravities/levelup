@@ -89,7 +89,9 @@ func Steam(app *types.App, cc string) error {
 			genres = append(genres, g.Description)
 		}
 
-		for _, t := range AppInfo(app.AppID) {
+		tags, reviewScore := AppInfo(app.AppID)
+
+		for _, t := range tags {
 			genres = append(genres, t)
 		}
 
@@ -106,8 +108,9 @@ func Steam(app *types.App, cc string) error {
 		app.Demo = demo
 		app.Score = util.RateWilson(float64(positive), float64(total))
 
+		// if we can't find any reviews on the app page
 		if math.IsNaN(app.Score) {
-			app.Score = 0
+			app.Score = float64(reviewScore) * float64(0.01)
 		}
 
 		util.Info("Fetched app page. Waiting a second...")
