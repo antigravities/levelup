@@ -291,7 +291,7 @@ function refreshApps(lApps, page = 1, maxPages = 1){
 
   Array.from(document.querySelectorAll(".currency")).forEach(i => i.innerHTML = currency);
 
-  if( sortType != "added_asc" || selectedGenre != "" || underPrice != -1 || os != "" || demo != "" || page > 1 ){
+  if( sortType != "added_asc" || selectedGenre != "" || underPrice != -1 || os != "" || demo != "" || page > 1 || discounted != "" ){
     document.querySelector("#app-carousel").setAttribute("style", "display: none");
     document.querySelector("#apps").setAttribute("style", "margin-top: calc(56px + .5em);")
   } else {
