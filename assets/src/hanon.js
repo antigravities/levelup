@@ -256,7 +256,7 @@ function initSearch(){
         return;
       }
 
-      $(".modal-body").html("Thanks for your submission! <a id='submit-another' href='#'>Submit another?</a>")
+      $("#submit-modal").find(".modal-body").html("Thanks for your submission! <a id='submit-another' href='#'>Submit another?</a>")
 
       $("#submit-another").on("click", () => {
         document.querySelector("#submit-modal").querySelector(".modal-body").innerHTML = appSearchHTML;
