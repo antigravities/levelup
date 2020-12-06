@@ -85,3 +85,15 @@ blockquote.review {
 body:not(.dark) > .footer > .light {
     display: none;
 }
+
+.positive {
+    color: #66C0F4;
+}
+
+.mixed {
+    color: #B9A074
+}
+
+.negative {
+    color: #A34C25;
+}

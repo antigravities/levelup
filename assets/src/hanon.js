@@ -145,6 +145,16 @@ function buyAppButton(app, w100 = false){
   return `${app.price == null ? `unavailable` : `<a class="btn btn-sm btn-primary${w100 ? " w-100" : ""}" target="_blank" href="${app.price.url}">${app.price.provider} (${app.price.discount > 0 ? "-" + app.price.discount + "% " : ""}${app.price.price > 0 ? formatPrice(app.price.price/100, app.price.provider == "Humble") : "Free"})</a><br>`}`;
 }
 
+function ratingSpan(app){
+  let c = "None";
+
+  if( app.Score*100 >= 80 ) c = "Positive"
+  else if( app.Score*100 >= 40 ) c = "Mixed";
+  else c = "Negative";
+
+  return `<span class="${c.toLowerCase()}" title="Score: ${Math.floor(app.Score*100)}%">${c}</span>`;
+}
+
 function addPaginator(page, maxPages){
   let html = "";
 
@@ -351,7 +361,8 @@ function refreshApps(lApps, page = 1, maxPages = 1){
               ${app.Platforms.Windows ? `<span class="platform windows" title="Windows">&nbsp;</span>`: ""}
               ${app.Platforms.MacOS ? `<span class="platform mac" title="macOS">&nbsp;</span>`: ""}
               ${app.Platforms.Linux ? `<span class="platform linux" title="SteamOS/Linux">&nbsp;</span>`: ""}
-              <a href="https://s.team/a/${app.AppID}">view on Steam</a>
+              ${ratingSpan(app)}
+               &middot; <a href="https://s.team/a/${app.AppID}">view on Steam</a>
               ${app.Demo ? ` &middot; <a href="https://store.steampowered.com/app/${app.AppID}/#game_area_purchase" target="_blank">demo available</a>` : ""}
             </small>
             
