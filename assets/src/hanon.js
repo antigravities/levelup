@@ -515,8 +515,34 @@ function parseHash(){
   refreshApps(apply, page, pages);
 }
 
+function applyTheme(){
+  if( window.localStorage.dark === "true" ){
+    $("body").attr("class", "dark");
+  } else {
+    $("body").attr("class", "");
+  }
+}
+
 // -- hash change
 window.addEventListener("hashchange", parseHash);
+
+window.addEventListener("load", async () => {
+  $("#light").on("click", e => {
+    e.preventDefault();
+
+    window.localStorage.dark = false;
+    applyTheme();
+  });
+
+  $("#dark").on("click", e => {
+    e.preventDefault();
+
+    window.localStorage.dark = true;
+    applyTheme();
+  });
+
+  applyTheme();
+});
 
 // -- load
 window.addEventListener("load", async () => {

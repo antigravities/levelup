@@ -69,10 +69,15 @@ func GameBillet(app *types.App, cc string) error {
 	ins := btn.Find("ins")
 	if ins != nil {
 		text := ins.Text()
-		discount, err = strconv.ParseUint(text[1:len(text)-1], 10, 32)
-		if err != nil {
-			util.Warn(fmt.Sprintf("Could not parse discount percent on %s: %v", app.Name, err))
+		if len(strings.TrimSpace(text)) == 0 {
+			util.Warn(fmt.Sprintf("No discount percent for %s", app.Name))
 			discount = 0
+		} else {
+			discount, err = strconv.ParseUint(text[1:len(text)-1], 10, 32)
+			if err != nil {
+				util.Warn(fmt.Sprintf("Could not parse discount percent on %s: %v", app.Name, err))
+				discount = 0
+			}
 		}
 	}
 

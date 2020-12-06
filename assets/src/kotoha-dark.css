@@ -1,4 +1,5 @@
 /*!
+ * Level Up
  * Copyright (c) 2020 Alexandra Frock, Cutie Café, contributors
  *
  * This program is free software: you can redistribute it and/or modify
@@ -16,19 +17,22 @@
  * 
  */
 
-var $ = require("jquery");
+body.dark,
+body.dark > .modal > .modal-dialog > .modal-content,
+body.dark > .modal > .modal-dialog > .modal-content > .modal-body > .typeahead__container > .typeahead__field,
+body.dark > .modal > .modal-dialog > .modal-content > textarea,
+body.dark > #apps > .list-group > .list-group-item
+{
+    transition: ease 0.3s;
+    background-color: #3b3b3b;
+    color: rgba(255, 255, 255, 0.5);
+}
 
-window.$ = $;
-window.jQuery = $;
+body.dark > #apps > .list-group > .list-group-item > .review {
+    transition: ease 0.3s;
+    background-color: #3b3b3b;
+}
 
-require("jquery-typeahead")
-
-import 'bootstrap'
-
-import './src/hanon.js'
-
-import './src/kotoha.css'
-import './src/kotoha-dark.css'
-
-import 'bootstrap/dist/css/bootstrap.css'
-import 'jquery-typeahead/src/jquery.typeahead.css'
+body.dark > .footer > .dark {
+    display: none;
+}

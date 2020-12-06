@@ -81,3 +81,7 @@ blockquote.review {
     margin-top: 1rem;
     border-radius: .5rem;
 }
+
+body:not(.dark) > .footer > .light {
+    display: none;
+}
