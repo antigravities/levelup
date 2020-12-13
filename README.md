@@ -16,6 +16,10 @@ Level Up is a Steam game recommendations site where users can submit their own a
 
 or
 
+`docker run --env-file .env -p 4000:4000 bikerwhocodes/levelup` 
+
+or
+
 `docker-compose up`
 
 or 
