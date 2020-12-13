@@ -11,22 +11,27 @@ Level Up is a Steam game recommendations site where users can submit their own a
 ### 1. using Docker
 
 Make sure you have the .env file if not run: `cp .env.example .env && $EDITOR .env`
-
+```
 `docker build -t levelup .` 
 
 `docker run --env-file .env -p 4000:4000 levelup` 
+```
 
 or
 
+```
 `docker run --env-file .env -p 4000:4000 bikerwhocodes/levelup` 
+```
 
 or
 
+```
 `docker-compose up`
 
 or 
 
 `docker-compose up -d` for headless mode
+```
 
 ### 2. Natively
 
