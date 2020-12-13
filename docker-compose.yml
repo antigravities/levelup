@@ -1,0 +1,21 @@
+version: "3.3"
+
+services:
+  levelup:
+    # image: "bikerwhocodes/levelup" # will be changed to antigravities/levelup
+    build: .
+    restart: always # optional
+    ports:
+      - "4000:4000"
+    environment:
+      AWS_ACCESS_KEY_ID:
+      AWS_SECRET_ACCESS_KEY:
+      AWS_REGION:
+      # DEBUG:
+      LU_TABLE: 
+      LU_ADMIN:
+      LU_RECAPTCHA_SERVER:
+      LU_RECAPTCHA_SITE:
+      LU_WEBROOT: "https://recommendations.steamsal.es/"
+      LU_POST_APPROVAL:
+      LU_POST_PREAPPROVAL:
