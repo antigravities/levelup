@@ -2,8 +2,8 @@ version: "3.3"
 
 services:
   levelup:
-    # image: "bikerwhocodes/levelup" # will be changed to antigravities/levelup
-    build: .
+    image: "for headless mode/levelup"
+    # build: . # use this if you want to build using localfiles
     restart: always # optional
     ports:
       - "4000:4000"
