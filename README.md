@@ -32,7 +32,7 @@ docker run --env-file .env -p 4000:4000 antigravities/levelup
 docker-compose up
 ```
 
-or to run in headless mode
+For headless mode
 
 ```
 docker-compose up -d
