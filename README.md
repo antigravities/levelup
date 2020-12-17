@@ -8,8 +8,39 @@ Level Up is a Steam game recommendations site where users can submit their own a
 
 ## Run it yourself
 
-Level Up's server components are written in Go and operate on top of an Amazon DynamoDB database (DynamoDB's free tier is more than enough to host).
+### 1. using Docker
 
+#### 1.a Run using Docker run
+
+Make sure you have the .env file if not run: `cp .env.example .env && $EDITOR .env`
+```
+docker build -t levelup .
+
+docker run --env-file .env -p 4000:4000 levelup
+```
+
+or
+
+```
+docker run --env-file .env -p 4000:4000 antigravities/levelup
+```
+
+
+#### 1.b Run using docker-compose
+
+```
+docker-compose up
+```
+
+For headless mode
+
+```
+docker-compose up -d
+```
+
+### 2. Natively
+
+Level Up's server components are written in Go and operate on top of an Amazon DynamoDB database (DynamoDB's free tier is more than enough to host).
 
 1. Download and install Go 1.14+.
 2. Download and install Node.js + npm.
