@@ -61,6 +61,10 @@ go build -i
 
 Contributions must be accompanied by a Signed-off-by header certifying your commit(s) under the [Developer Certificate of Origin](https://developercertificate.org/).
 
+### Acknowledgements
+
+Special thanks to [@bikerwhocodes](https://github.com/bikerwhocodes) for implementing the Docker images!
+
 ## License
 
 ```
