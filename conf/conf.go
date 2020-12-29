@@ -3,13 +3,15 @@ package conf
 import (
 	"flag"
 	"fmt"
+	"os"
+	"strings"
 
 	"get.cutie.cafe/levelup/util"
 )
 
 var (
 	// OpMode describes the server's operation mode
-	OpMode *string
+	OpMode string
 
 	// Fetch enables fetching
 	Fetch bool = true
@@ -26,10 +28,10 @@ var (
 
 // Init finds the command line flags and sets FetchOnly/ServeOnly
 func Init() {
-	OpMode = flag.String("mode", "all", "Operation mode. Possible options are fetch, serve, and all (which is both).")
+	//OpMode = flag.String("mode", "all", "Operation mode. Possible options are fetch, serve, and all (which is both).")
+
 	forceDiscord := flag.Bool("force-discord", false, "Force discord reposting?")
 	forceFetch := flag.Bool("force-fetch", false, "Force re-fetch of all apps?")
-
 	flag.Parse()
 
 	if forceDiscord != nil {
@@ -40,7 +42,9 @@ func Init() {
 		ForceFetch = *forceFetch
 	}
 
-	switch *OpMode {
+	OpMode = strings.ToLower(os.Getenv("LU_MODE"))
+
+	switch OpMode {
 	case "fetch":
 		Fetch = true
 		Serve = false
@@ -50,10 +54,11 @@ func Init() {
 		Serve = true
 		break
 	case "all":
+	default:
 		Fetch = true
 		Serve = true
 		break
 	}
 
-	util.Debug(fmt.Sprintf("OpMode: %s, fetch: %t, serve: %t", *OpMode, Fetch, Serve))
+	util.Debug(fmt.Sprintf("OpMode: %s, fetch: %t, serve: %t", OpMode, Fetch, Serve))
 }
