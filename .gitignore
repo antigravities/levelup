@@ -5,3 +5,4 @@ server.log
 assets/node_modules
 static
 levelup
+.DS_Store
