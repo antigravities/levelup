@@ -3,7 +3,6 @@ module get.cutie.cafe/levelup
 go 1.14
 
 require (
-	github.com/PuerkitoBio/goquery v1.6.0
 	github.com/aws/aws-sdk-go v1.34.23
 	github.com/blevesearch/bleve v1.0.10
 	github.com/carlescere/scheduler v0.0.0-20170109141437-ee74d2f83d82
