@@ -2,7 +2,7 @@ version: "3.3"
 
 services:
   levelup:
-    image: "for headless mode/levelup"
+    image: "antigravities/levelup"
     # build: . # use this if you want to build using localfiles
     restart: always # optional
     ports:
