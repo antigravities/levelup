@@ -25,6 +25,7 @@ RUN apk --no-cache add ca-certificates
 WORKDIR /app/
 COPY --from=builder-webpack /static/ ./static/
 COPY --from=builder-go /src/levelup .
+COPY --from=builder-go /src/font.ttf .
 
 EXPOSE 4000
 
