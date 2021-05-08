@@ -19,3 +19,4 @@ services:
       LU_WEBROOT: "https://recommendations.steamsal.es/"
       LU_POST_APPROVAL:
       LU_POST_PREAPPROVAL:
+      LU_MODE:
