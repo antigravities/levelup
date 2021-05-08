@@ -19,13 +19,11 @@
 package main
 
 import (
-	"os"
 	"time"
 
 	"get.cutie.cafe/levelup/conf"
 	db "get.cutie.cafe/levelup/db/dynamodb"
 	"get.cutie.cafe/levelup/scheduled"
-	"get.cutie.cafe/levelup/search"
 	"get.cutie.cafe/levelup/util"
 	"get.cutie.cafe/levelup/www"
 )
@@ -56,14 +54,6 @@ func main() {
 	}
 
 	db.Initialize()
-
-	if conf.Serve {
-		if _, err := os.Stat("map"); os.IsNotExist(err) {
-			search.Refresh()
-		} else {
-			util.Debug("Skipping initial search engine refresh (for now...)")
-		}
-	}
 
 	for _, v := range db.GetApps(false) {
 		db.GetApp(v)

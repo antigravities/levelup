@@ -6,7 +6,6 @@ import (
 	"get.cutie.cafe/levelup/conf"
 	"get.cutie.cafe/levelup/db/dynamodb"
 	"get.cutie.cafe/levelup/fetch"
-	"get.cutie.cafe/levelup/search"
 	"get.cutie.cafe/levelup/types"
 	"get.cutie.cafe/levelup/util"
 	"get.cutie.cafe/levelup/www"
@@ -16,10 +15,6 @@ import (
 // Start initializes the scheduler functions
 func Start() {
 	util.Info("Initializing scheduled tasks")
-
-	scheduler.Every(6).Hours().Run(func() {
-		search.Refresh()
-	})
 
 	scheduler.Every(30).Minutes().Run(RefreshStaleApps)
 

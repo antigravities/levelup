@@ -15,7 +15,6 @@ import (
 
 	"get.cutie.cafe/levelup/db/dynamodb"
 	"get.cutie.cafe/levelup/fetch"
-	"get.cutie.cafe/levelup/search"
 	"get.cutie.cafe/levelup/types"
 	"get.cutie.cafe/levelup/util"
 
@@ -46,7 +45,6 @@ type adminResponse struct {
 func handleStatus(ctx *fiber.Ctx, code int, message string) {
 	ctx.SendStatus(code)
 	ctx.SendString(message)
-	return
 }
 
 // findIP finds the most likely IP of the user, checking X-Forwarded-For first.
@@ -74,31 +72,6 @@ func Start() {
 
 	app = fiber.New()
 
-	app.Get("/api/search", func(ctx *fiber.Ctx) error {
-		q := ctx.Query("q")
-		if q == "" {
-			handleStatus(ctx, 400, "Bad request")
-			return nil
-		}
-
-		apps, err := search.Query(q)
-		if err != nil {
-			handleStatus(ctx, 500, "Internal server error")
-			return nil
-		}
-
-		j, err := json.Marshal(apps)
-		if err != nil {
-			handleStatus(ctx, 500, "Internal server error")
-			return nil
-		}
-
-		ctx.Set("Content-Type", "application/json")
-		ctx.Send(j)
-
-		return nil
-	})
-
 	app.Get("/api/suggestions", func(ctx *fiber.Ctx) error {
 		bytes, err := json.Marshal(dynamodb.GetFullApps(false))
 		if err != nil {
@@ -119,7 +92,7 @@ func Start() {
 			return nil
 		}
 
-		if input.Recaptcha == nil || *input.Recaptcha == "" || input.AppID == nil || *input.AppID < 10 || !search.IsApp(*input.AppID) || input.Review == nil || len(*input.Review) < 10 || len(*input.Review) > 300 {
+		if input.Recaptcha == nil || *input.Recaptcha == "" || input.AppID == nil || *input.AppID < 10 || input.Review == nil || len(*input.Review) < 10 || len(*input.Review) > 300 {
 			handleStatus(ctx, 400, "Bad request")
 			return nil
 		}
@@ -210,7 +183,7 @@ func Start() {
 		case "approve":
 			appid, err := strconv.Atoi(ctx.Query("appid"))
 
-			if err != nil || appid < 10 || !search.IsApp(appid) {
+			if err != nil || appid < 10 {
 				handleStatus(ctx, 400, "Bad AppID")
 				return nil
 			}
@@ -250,7 +223,7 @@ func Start() {
 		case "delete":
 			appid, err := strconv.Atoi(ctx.Query("appid"))
 
-			if err != nil || appid < 10 || !search.IsApp(appid) {
+			if err != nil || appid < 10 {
 				handleStatus(ctx, 400, "Bad AppID")
 				return nil
 			}
@@ -302,7 +275,7 @@ func Start() {
 			err   error
 		)
 
-		if appid, err = strconv.Atoi(ctx.Params("app")); err != nil || !search.IsApp(appid) {
+		if appid, err = strconv.Atoi(ctx.Params("app")); err != nil {
 			handleStatus(ctx, 404, "Could not find app")
 			return nil
 		}
