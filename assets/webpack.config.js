@@ -53,5 +53,10 @@ module.exports = {
             template: "src/index.html",
         })
     ],
+    devServer: {
+        proxy: {
+            '/api': 'http://localhost:4000',
+        },
+    },
     mode: "production"
 }

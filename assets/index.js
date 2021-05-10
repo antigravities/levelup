@@ -21,14 +21,10 @@ var $ = require("jquery");
 window.$ = $;
 window.jQuery = $;
 
-require("jquery-typeahead")
-
 import 'bootstrap'
+import 'bootstrap/dist/css/bootstrap.css'
 
 import './src/hanon.js'
 
 import './src/kotoha.css'
 import './src/kotoha-dark.css'
-
-import 'bootstrap/dist/css/bootstrap.css'
-import 'jquery-typeahead/src/jquery.typeahead.css'

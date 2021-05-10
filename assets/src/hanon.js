@@ -25,25 +25,6 @@ console.log("%cHey, listen!", "font-size: 30px;");
 console.log("%cThis page contains a secret! Be the first to find it and message Alexandra#1337 on Discord (via discord.gg/steam) with proof to win a $5 Steam digital gift card!", "font-size: 15px;")
 console.log("Contest ends December 31, 2020.");
 
-// -- handle extra price magic numbers
-window[atob("YWRkRXZlbnRMaXN0ZW5lcg")](atob("a2V5ZG93bg"), (e) => {
-  if( eval(atob("laZG9jdW1lbnQucXVlcnlTZWxlY3RvcigndGV4dGFyZWEnKSA9PSBkb2N1bWVudC5hY3RpdmVFbGVtZW50IHx8IGRvY3VtZW50LnF1ZXJ5U2VsZWN0b3IoJyNhcHBzZWFyY2gnKSA9PSBkb2N1bWVudC5hY3RpdmVFbGVtZW50".substring(2))) ) return;
-
-  prices3.push(priceImage.indexOf(e.key));
-
-  prices2.forEach((_, i) => {
-    if( prices2.concat(prices1).map(i => -i)[i] != prices3[i] && prices3[i] != undefined ){
-      prices3 = [];
-    }
-  });
-
-  let pricesFilter = prices4.filter(i => i < 45).map(i => !i);
-
-  if( prices3.length == prices2.concat(prices1).length && prices3.length != pricesFilter.length ) {
-    window.location = atob(priceImage.substring(Math.floor(priceImage.length/(priceImage.length/2)), priceImage.length-pricesFilter.length));
-  }
-});
-
 let apps;
 let currency = "$";
 let country = "us";
@@ -118,7 +99,6 @@ const prices1 = [ -33, -18 ];
 const prices2 = [ 0, -1 ];
 const prices4 = [ 50, 45, 2, 20, 19 ];
 let prices3 = [];
-const priceImage = "loaHR0cHM6Ly93d3cueW91dHViZS5jb20vd2F0Y2g/dj1JM2JpY2pRMGhObwnxd";
 
 // -- utility functions
 function clone(elem){
@@ -212,33 +192,24 @@ function scanPrices(){
   }
 }
 
-function initSearch(){
-  $("#appsearch").typeahead({
-    order: "asc",
-    dynamic: true,
-    source: {
-      app: {
-        display: "name",
-        template: (_, item) => {
-          return item.name + " (" + item.appid + ")"; 
-        },
-        data: [],
-        ajax: {
-          type: "GET",
-          url: "/api/search?q={{query}}"
-        }
-      }
-    },
-    callback: {
-      onClick: (node, a, item, event) => {
-        event.preventDefault();
-        document.querySelector("#appsearch").value = item.name + " (" + item.appid + ")";
-      }
-    }
-  });
+function getAppFromSearchBox(val){
+  if( val == "" ) return 0;
 
+  if( isNaN(parseInt(val)) ){
+    let store = /^(https?:\/\/)?(store\.steampowered\.com|steamcommunity\.com)\/app\/(\d{1,8})/.exec(val);
+    if( store && store.length > 3 ){
+      return parseInt(store[3]);
+    }
+  } else {
+    return parseInt(val);
+  }
+}
+
+function initSearch(){
   $("#submit").on("click", () => {
-    if( $("#appsearch").val() == "" || ( isNaN(parseInt($("#appsearch").val())) && /\((\d*)\)$/.exec($("#appsearch").val()) == null ) ) return $("#error").text("Please enter an app to suggest.");
+    let app = getAppFromSearchBox($("#appsearch").val());
+
+    if( app === 0 ) return $("#error").text("Please enter the Store page of the title you want to suggest.");
     if( $("#review").val().trim() == "" || $("#review").val().trim().length < 10 || $("#review").val().trim().length > 300 ) return $("#error").text("You must include why you want to recommend this title, and your response must be 10 to 300 characters long.");
     if( grecaptcha.getResponse() == "" ) return $("#error").text("Are you a robot?");
 
@@ -249,7 +220,7 @@ function initSearch(){
     fetch("/api/suggestions", {
       method: "POST",
       body: JSON.stringify({
-          AppID: isNaN(parseInt($("#appsearch").val())) ? parseInt(/\((\d*)\)$/.exec($("#appsearch").val())[1]) : (parseInt($("#appsearch").val())),
+          AppID: app,
           Review: $("#review").val(),
           Recaptcha: grecaptcha.getResponse()
       }),
