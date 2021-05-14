@@ -280,7 +280,7 @@ func Start() {
 			return nil
 		}
 
-		if app = dynamodb.GetApp(appid); app == nil && !app.IsPending {
+		if app = dynamodb.GetApp(appid); app == nil && app.IsPending {
 			handleStatus(ctx, 404, "Could not find app")
 			return nil
 		}
