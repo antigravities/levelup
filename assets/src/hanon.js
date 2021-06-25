@@ -21,11 +21,11 @@ import $ from 'jquery';
 import DOMPurify from 'dompurify';
 import activate from './chico';
 
-console.log("%cHey, listen!", "font-size: 30px;");
-console.log("%cThis page contains a secret! Be the first to find it and message Alexandra#1337 on Discord (via discord.gg/steam) with proof to win a $5 Steam digital gift card!", "font-size: 15px;")
-console.log("Contest ends December 31, 2020.");
+const days = [ "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday" ];
+const months = [ "January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December" ]
 
 let apps;
+let specialEvent;
 let currency = "$";
 let country = "us";
 
@@ -92,13 +92,7 @@ let genreSections = [
   ]
 ]
 
-let appReviewHelpful = ( window.localStorage.appReviewHelpful ? window.localStorage.appReviewHelpful.split(",") : []);
-
-// -- store price magic numbers
-const prices1 = [ -33, -18 ];
-const prices2 = [ 0, -1 ];
-const prices4 = [ 50, 45, 2, 20, 19 ];
-let prices3 = [];
+let appReviewHelpful = ( window.localStorage.appReviewHelpful ? window.localStorage.appReviewHelpful.split(",") : [] );
 
 // -- utility functions
 function clone(elem){
@@ -303,6 +297,8 @@ function refreshApps(lApps, page = 1, maxPages = 1){
   if( lApps.length < 1 ){
     html = "<h1>Oops!</h1>Your search didn't turn up anything. Broaden your search terms to find something you'll love.";  
   } else {
+
+    html += `<div id="special-event">${putSpecialEvent()}</div>`;
 
     html += addPaginator(page, maxPages);
 
@@ -526,6 +522,32 @@ window.addEventListener("load", async () => {
   applyTheme();
 });
 
+function pad(n){
+  return (n < 10 ? "0" : "" ) + n;
+}
+
+function putSpecialEvent(){
+  if( specialEvent == null ) return "";
+
+  let niceTimeToEnd = "";
+
+  let endTime = new Date(specialEvent.EndTimestamp*1000);
+
+  let timeToEnd = endTime - new Date();
+  if( timeToEnd <= 0 ) return "";
+
+  timeToEnd/=1000;
+
+  if( timeToEnd < 60 ) niceTimeToEnd = "in less than a minute";
+  else if( timeToEnd < 3600 ) niceTimeToEnd = `in about ${Math.round(timeToEnd/60)} minutes`;
+  else if( timeToEnd < 86400 ) niceTimeToEnd = `in about ${Math.round(timeToEnd/3600)} hours`;
+  else niceTimeToEnd = `in about ${Math.round(timeToEnd/86400)} days`;
+
+  let niceTimestamp = days[endTime.getDay()] + " " + months[endTime.getMonth()] + " " + endTime.getDate() + " " + endTime.getFullYear() + ", " + (endTime.getHours()%12) + ":" + pad(endTime.getMinutes()) + " " + (endTime.getHours() > 12 ? "pm" : "am");
+
+  return `The ${specialEvent.Name} ends <time title="${niceTimestamp}">${niceTimeToEnd}</time>! <a href="#discounted=1">${Object.keys(apps).filter(i => apps[i].price.discount > 0).length} recommendations are discounted.</a>`;
+}
+
 // -- load
 window.addEventListener("load", async () => {
   let newDiv = document.createElement("div");
@@ -547,7 +569,9 @@ window.addEventListener("load", async () => {
     }
   });
 
-  apps = await (await fetch("/api/suggestions")).json();
+  let response = await (await fetch("/api/data")).json();
+  apps = response.Apps;
+  specialEvent = response.Event;
 
   for(let app of Object.keys(apps)){
     apps[app].Genres.forEach(i => {

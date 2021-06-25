@@ -42,6 +42,14 @@ type adminResponse struct {
 	UnapprovedApps map[string]*types.App
 }
 
+type suggestionsResponse struct {
+	Event *struct {
+		Name         string
+		EndTimestamp uint64
+	}
+	Apps map[string]*types.App
+}
+
 func handleStatus(ctx *fiber.Ctx, code int, message string) {
 	ctx.SendStatus(code)
 	ctx.SendString(message)
@@ -72,8 +80,29 @@ func Start() {
 
 	app = fiber.New()
 
-	app.Get("/api/suggestions", func(ctx *fiber.Ctx) error {
-		bytes, err := json.Marshal(dynamodb.GetFullApps(false))
+	app.Get("/api/data", func(ctx *fiber.Ctx) error {
+		res := &suggestionsResponse{}
+		res.Apps = dynamodb.GetFullApps(false)
+
+		if val, ok := os.LookupEnv("LU_EVENT"); ok && val != "" {
+			res.Event = &struct {
+				Name         string
+				EndTimestamp uint64
+			}{}
+
+			res.Event.Name = val
+
+			if val, ok := os.LookupEnv("LU_EVENT_END"); ok && val != "" {
+				ts, err := strconv.ParseUint(val, 10, 64)
+				if err != nil {
+					ts = 0
+				}
+
+				res.Event.EndTimestamp = ts
+			}
+		}
+
+		bytes, err := json.Marshal(res)
 		if err != nil {
 			handleStatus(ctx, 500, "Internal server error")
 			return nil
@@ -84,7 +113,7 @@ func Start() {
 		return nil
 	})
 
-	app.Post("/api/suggestions", func(ctx *fiber.Ctx) error {
+	app.Post("/api/data", func(ctx *fiber.Ctx) error {
 		input := post{}
 
 		if err := ctx.BodyParser(&input); err != nil {

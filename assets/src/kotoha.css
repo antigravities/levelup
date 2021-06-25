@@ -97,3 +97,12 @@ body:not(.dark) > .footer > .light {
 .negative {
     color: #A34C25;
 }
+
+#special-event {
+    font-size: 2em;
+    text-align: center;
+}
+
+#special-event > time {
+    border-bottom: 1px dotted black;
+}
