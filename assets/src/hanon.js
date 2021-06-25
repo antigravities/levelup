@@ -129,15 +129,17 @@ function ratingSpan(app){
   return `<span class="${c.toLowerCase()}" title="Score: ${Math.floor(app.Score*100)}%">${c}</span>`;
 }
 
-function addPaginator(page, maxPages){
-  let html = "";
+function addPaginator(page, maxPages, isTop = false){
+  let html = `<div class='paginator ${isTop ? "top" : "bottom"}'>`;
 
-  if( page > 1 ) html += `<p style="float: left;"><a class="replace" data-arg="page" data-replace="${parseInt(page)-1}" href="#">Previous</a></p>`;
-  if( page < Math.ceil(maxPages) ) html += `<p style="float: right;"><a class="replace" data-arg="page" data-replace="${parseInt(page)+1}" href="#">Next</a></p>`;
+  if( page > 1 ) html += `<p style="float: left;"><a class="replace btn btn-sm btn-primary" data-arg="page" data-replace="${parseInt(page)-1}" href="#">Prev</a></p>`;
+  if( page < Math.ceil(maxPages) ) html += `<p style="float: right;"><a class="replace btn btn-sm btn-primary" data-arg="page" data-replace="${parseInt(page)+1}" href="#">Next</a></p>`;
 
   html += `<p style="text-align: center;">Page <b>${page}</b> of ${Math.ceil(maxPages)}</p>`;
 
-  return html
+  html += "</div>";
+
+  return html 
 }
 
 // -- interactable functions
@@ -300,7 +302,7 @@ function refreshApps(lApps, page = 1, maxPages = 1){
 
     html += `<div id="special-event">${putSpecialEvent()}</div>`;
 
-    html += addPaginator(page, maxPages);
+    html += addPaginator(page, maxPages, true);
 
     html += `<div class="list-group">`;
 

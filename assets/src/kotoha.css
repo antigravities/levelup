@@ -106,3 +106,11 @@ body:not(.dark) > .footer > .light {
 #special-event > time {
     border-bottom: 1px dotted black;
 }
+
+.paginator {
+    height: 3em;
+}
+
+.paginator.bottom {
+    padding-top: 1em;
+}
