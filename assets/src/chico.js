@@ -30,7 +30,7 @@ export default async function activate(){
         
             try {
                 items = await (await fetch("/api/admin?key=" + password)).json();
-                apps = await (await fetch("/api/suggestions")).json()
+                apps = await (await fetch("/api/data")).json()
             } catch(e){
                 continue;
             }
@@ -84,7 +84,7 @@ export default async function activate(){
                     case "a":
                         try {
                             items = await (await fetch("/api/admin?key=" + password + "&action=approve&appid=" + appid)).json();
-                            apps = await (await fetch("/api/suggestions")).json()
+                            apps = await (await fetch("/api/data")).json()
                         } catch(e){
                             alert("Action failed: " + e);
                         }
@@ -92,7 +92,7 @@ export default async function activate(){
                     case "u":
                         try {
                             items = await (await fetch("/api/admin?key=" + password + "&action=delete&appid=" + appid)).json();
-                            apps = await (await fetch("/api/suggestions")).json()
+                            apps = await (await fetch("/api/data")).json()
                         } catch(e) {
                             alert("Action failed: " + e);
                         }
