@@ -213,7 +213,7 @@ function initSearch(){
     $("#submit").addClass("disabled");
     $("#submit").text("Please wait...");
 
-    fetch("/api/suggestions", {
+    fetch("/api/data", {
       method: "POST",
       body: JSON.stringify({
           AppID: app,
