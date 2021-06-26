@@ -34,10 +34,14 @@ let args = {};
 let selectedGenre = "";
 let underPrice = -1;
 let sortType = "name";
-let os = ""
-let demo = ""
-let discounted = ""
+let os = "";
+let demo = "";
+let discounted = "";
+let gems = "";
 let page = 1
+
+let hgReviewThreshold = 0;
+const hgReviewThresholdMultiplier = 0.007;
 
 let appsPerPage = 10;
 
@@ -122,11 +126,11 @@ function buyAppButton(app, w100 = false){
 function ratingSpan(app){
   let c = "None";
 
-  if( app.Score*100 >= 80 ) c = "Positive"
+  if( app.Score*100 >= 70 ) c = "Positive"
   else if( app.Score*100 >= 40 ) c = "Mixed";
   else c = "Negative";
 
-  return `<span class="${c.toLowerCase()}" title="Score: ${Math.floor(app.Score*100)}%">${c}</span>`;
+  return `<span class="${c.toLowerCase()}" title="Score: ${Math.floor(app.Score*100)}%, ${app.ReviewsTotal} reviews">${c}</span>`;
 }
 
 function addPaginator(page, maxPages, isTop = false){
@@ -268,7 +272,7 @@ function refreshApps(lApps, page = 1, maxPages = 1){
 
   Array.from(document.querySelectorAll(".currency")).forEach(i => i.innerHTML = currency);
 
-  if( sortType != "added_asc" || selectedGenre != "" || underPrice != -1 || os != "" || demo != "" || page > 1 || discounted != "" ){
+  if( sortType != "added_asc" || selectedGenre != "" || underPrice != -1 || os != "" || demo != "" || page > 1 || discounted != "" || gems != "" ){
     document.querySelector("#app-carousel").setAttribute("style", "display: none");
     document.querySelector("#apps").setAttribute("style", "margin-top: calc(56px + .5em);")
   } else {
@@ -435,6 +439,8 @@ function parseHash(){
 
   discounted = params.discounted || "";
 
+  gems = params.gems || "";
+
   scanPrices();
 
   let apply = Object.keys(apps).filter(i => {
@@ -455,6 +461,8 @@ function parseHash(){
     if( demo != "" && ! apps[i].Demo ) return false;
 
     if( discounted != "" && apps[i].price.discount < 1 ) return false;
+
+    if( gems != "" && ( apps[i].ReviewsTotal > hgReviewThreshold || apps[i].ReviewsTotal == 0 || apps[i].Score < 0.7 ) ) return false;
 
     return true;
   }).map(i => apps[i]);
@@ -580,7 +588,12 @@ window.addEventListener("load", async () => {
       if( ! genres[i] ) genres[i] = 0;
       genres[i]++;
     });
+
+    if( apps[app].ReviewsTotal > hgReviewThreshold ) hgReviewThreshold = apps[app].ReviewsTotal;
   }
+
+  hgReviewThreshold *= hgReviewThresholdMultiplier;
+  //console.log("Hidden gem review threshold is", hgReviewThreshold);
 
   let sortedGenres = Object.keys(genres).sort((a,b) => {
     if(genres[a] > genres[b]) return -1;
