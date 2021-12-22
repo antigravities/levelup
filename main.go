@@ -55,9 +55,11 @@ func main() {
 
 	db.Initialize()
 
-	for _, v := range db.GetApps(false) {
-		db.GetApp(v)
-	}
+	/*
+		for _, v := range db.GetApps(false) {
+			db.GetApp(v)
+		}
+	*/
 
 	scheduled.Start()
 
