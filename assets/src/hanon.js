@@ -38,7 +38,7 @@ let os = "";
 let demo = "";
 let discounted = "";
 let gems = "";
-let page = 1
+let page = 1;
 
 let hgReviewThreshold = 0;
 const hgReviewThresholdMultiplier = 0.007;
@@ -501,6 +501,10 @@ function parseHash(){
   apply = apply.slice(appsPerPage*(page-1), appsPerPage*page);
 
   refreshApps(apply, page, pages);
+
+  if( window.location.hash === "#submit" ){
+    $("#submit-modal").modal('show');
+  }
 }
 
 function applyTheme(){
