@@ -121,11 +121,12 @@ func All(app *types.App, cc string) error {
 		return err
 	}
 
-	if cc == "us" {
+	// disabled because of 403s, for now
+	/* if cc == "us" {
 		if err := Humble(app, cc); err != nil {
 			return err
 		}
-	}
+	} */
 
 	if err := Fanatical(app, cc); err != nil {
 		return err
