@@ -19,6 +19,9 @@ var (
 	sess *session.Session
 	db   *dynamodb.DynamoDB
 
+	cache     map[string]*types.App = make(map[string]*types.App)
+	cacheTime int64                 = 0
+
 	table string
 )
 
@@ -111,6 +114,11 @@ func GetApps(pending bool) []int {
 
 // GetFullApps gets all of the information (i.e. more than just AppIDs) for the apps in the database
 func GetFullApps(pending bool) map[string]*types.App {
+	if time.Now().Unix()-cacheTime < 120 && !pending {
+		util.Info("Using cached apps for request")
+		return cache
+	}
+
 	util.Info("Fetching apps from DynamoDB")
 
 	util.Debug(fmt.Sprintf("pending: %v", pending))
@@ -152,6 +160,9 @@ func GetFullApps(pending bool) map[string]*types.App {
 
 		apps[strconv.Itoa(wapp.AppID)] = wapp
 	}
+
+	cache = apps
+	cacheTime = time.Now().Unix()
 
 	return apps
 }
